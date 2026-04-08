@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>롯데렌터카 배너 에디터</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f2f2f2;font-family:'Apple SD Gothic Neo',sans-serif;padding:20px 12px;}
+.wrap{max-width:600px;margin:0 auto;}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.label{font-size:11px;color:#888;font-weight:600;margin-bottom:6px;display:block;}
+.sub-label{font-size:10px;color:#aaa;margin-bottom:3px;}
+input[type=text],input[type=color],textarea{outline:none;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.banner-btn{padding:9px 6px;border-radius:8px;border:2px solid #e8e8e8;text-align:center;cursor:pointer;background:#fafafa;width:100%;}
+.banner-btn.active{border-color:#C8001E;background:#fff5f5;}
+.banner-btn .name{font-size:11px;font-weight:700;color:#222;}
+.banner-btn.active .name{color:#C8001E;}
+.banner-btn .size{font-size:10px;color:#aaa;margin-top:1px;}
+.field-input{width:100%;padding:8px 10px;border-radius:7px;border:1.5px solid #eee;font-size:12px;color:#222;font-family:inherit;}
+.field-textarea{width:100%;padding:8px 10px;border-radius:7px;border:1.5px solid #eee;font-size:12px;color:#222;resize:none;font-family:inherit;line-height:1.6;}
+.color-swatch{width:36px;height:36px;border-radius:8px;border:2px solid #ddd;cursor:pointer;flex-shrink:0;}
+.color-swatch.active{border:3px solid #C8001E;box-shadow:0 0 0 2px #fff inset;}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.color-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;}
+.color-hex{font-size:9px;color:#aaa;font-weight:400;}
+.color-hex.active{color:#C8001E;font-weight:700;}
+.cpicker-row{display:flex;gap:8px;align-items:center;}
+.cpicker-box{position:relative;width:44px;height:44px;flex-shrink:0;}
+.cpicker-preview{width:44px;height:44px;border-radius:8px;border:2px solid #ddd;cursor:pointer;}
+.cpicker-input-hidden{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.hex-input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #e8e8e8;font-size:13px;font-weight:600;color:#222;letter-spacing:.05em;}
+.mult-btn{flex:1;padding:10px 0;border-radius:8px;border:2px solid #e8e8e8;cursor:pointer;font-weight:700;font-size:13px;background:#fafafa;color:#555;}
+.mult-btn.active{border-color:#C8001E;background:#fff5f5;color:#C8001E;}
+.export-btn{width:100%;padding:13px;border-radius:10px;border:none;background:#111;color:#fff;font-size:14px;font-weight:700;cursor:pointer;}
+.upload-btn{padding:9px 16px;border-radius:8px;border:1.5px solid #e8e8e8;background:#fafafa;font-size:13px;cursor:pointer;font-weight:600;}
+.divider{border-top:1px solid #f0f0f0;margin-top:14px;padding-top:14px;}
+.badge-preset-btn{padding:4px 12px;border-radius:6px;border:2px solid #555;cursor:pointer;font-size:12px;font-weight:700;background:#111;color:#fff;}
+.badge-preset-btn.active{border-color:#C8001E;outline:2px solid #C8001E;outline-offset:1px;}
+#preview-container{overflow-x:auto;}
+#preview-canvas-wrapper{position:relative;display:inline-block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 헤더 -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <div style="background:#C8001E;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;">🎨</div>
+    <div>
+      <div style="font-weight:800;font-size:15px;color:#111;">롯데렌터카 배너 에디터</div>
+      <div style="font-size:11px;color:#999;">이미지 업로드 → 텍스트 입력 → PNG 추출</div>
+    </div>
+  </div>
+
+  <!-- 배너 종류 -->
+  <div class="card">
+    <div class="label">배너 종류</div>
+    <div class="grid3" id="banner-btns"></div>
+  </div>
+
+  <!-- 동적 영역 -->
+  <div id="editor" style="display:none;">
+    <!-- 배경 설정 -->
+    <div class="card">
+      <div class="label" style="font-weight:700;font-size:12px;color:#555;margin-bottom:12px;">배경 설정</div>
+      <div style="margin-bottom:14px;">
+        <div class="label">배경 이미지</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="upload-btn" onclick="document.getElementById('bgFile').click()">🖼️ 이미지 업로드</button>
+          <input type="file" id="bgFile" accept="image/*" style="display:none;" onchange="loadBgImg(event)"/>
+          <span id="bgStatus" style="font-size:11px;color:#bbb;">예) 차량 사진, 배경 이미지 (JPG/PNG)</span>
+        </div>
+        <div id="bgDragHint" style="font-size:11px;color:#aaa;margin-top:6px;display:none;">💡 미리보기에서 이미지를 드래그해서 위치 조정 가능해요</div>
+      </div>
+      <div>
+        <div class="label">배경색 <span style="color:#bbb;font-weight:400;">(선택 시 텍스트 색상 자동 변경)</span></div>
+        <div class="color-row" id="bg-swatches"></div>
+        <div class="cpicker-row">
+          <div class="cpicker-box">
+            <div class="cpicker-preview" id="bgColorPreview" onclick="document.getElementById('bgColorNative').click()"></div>
+            <input type="color" id="bgColorNative" class="cpicker-input-hidden" oninput="setBgColor(this.value)"/>
+          </div>
+          <div style="flex:1;">
+            <div class="sub-label">HEX 직접 입력</div>
+            <input type="text" class="hex-input" id="bgColorHex" oninput="setBgColor(this.value)" maxlength="7"/>
+          </div>
+          <div id="bgColorSquare" style="width:44px;height:44px;border-radius:8px;border:2px solid #ddd;flex-shrink:0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 텍스트 입력 -->
+    <div class="card">
+      <div class="label" style="font-weight:700;font-size:12px;color:#555;margin-bottom:10px;">텍스트 입력</div>
+      <div id="badge-preset-section" style="display:none;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">
+        <div class="label">배지 선택</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="badge-presets"></div>
+        <div id="badge-selected-hint" style="font-size:10px;color:#C8001E;margin-top:6px;font-weight:600;display:none;"></div>
+      </div>
+      <div class="grid2" id="text-fields"></div>
+
+      <!-- 텍스트 색상 -->
+      <div class="divider">
+        <div class="label">텍스트 색상</div>
+        <div class="color-row" id="text-swatches"></div>
+        <div class="cpicker-row">
+          <div class="cpicker-box">
+            <div class="cpicker-preview" id="textColorPreview" onclick="document.getElementById('textColorNative').click()"></div>
+            <input type="color" id="textColorNative" class="cpicker-input-hidden" oninput="setTextColor(this.value)"/>
+          </div>
+          <div style="flex:1;">
+            <div class="sub-label">HEX 직접 입력</div>
+            <input type="text" class="hex-input" id="textColorHex" oninput="setTextColor(this.value)" maxlength="7"/>
+          </div>
+          <div id="textColorSquare" style="width:44px;height:44px;border-radius:8px;border:2px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">Aa</div>
+        </div>
+      </div>
+
+      <!-- 이벤트 배지 색상 -->
+      <div class="divider" id="round-badge-color-section" style="display:none;">
+        <div class="label">이벤트 배지 색상</div>
+        <div class="cpicker-row">
+          <div class="cpicker-box">
+            <div class="cpicker-preview" id="roundBadgeColorPreview" onclick="document.getElementById('roundBadgeColorNative').click()"></div>
+            <input type="color" id="roundBadgeColorNative" class="cpicker-input-hidden" oninput="setRoundBadgeColor(this.value)"/>
+          </div>
+          <div style="flex:1;">
+            <div class="sub-label">HEX 직접 입력</div>
+            <input type="text" class="hex-input" id="roundBadgeColorHex" oninput="setRoundBadgeColor(this.value)" maxlength="7"/>
+          </div>
+          <div id="roundBadgePreviewPill" style="width:44px;height:44px;border-radius:50%;background:#fff;border:2px solid #0050FF;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0050FF;">EVENT</div>
+        </div>
+      </div>
+
+      <!-- 버튼 아웃라인 색상 -->
+      <div class="divider" id="btn-outline-color-section" style="display:none;">
+        <div class="label">버튼 아웃라인 색상</div>
+        <div class="color-row" id="btn-outline-swatches"></div>
+        <div class="cpicker-row">
+          <div class="cpicker-box">
+            <div class="cpicker-preview" id="btnOutlineColorPreview" onclick="document.getElementById('btnOutlineColorNative').click()"></div>
+            <input type="color" id="btnOutlineColorNative" class="cpicker-input-hidden" oninput="setBtnOutlineColor(this.value)"/>
+          </div>
+          <div style="flex:1;">
+            <div class="sub-label">HEX 직접 입력</div>
+            <input type="text" class="hex-input" id="btnOutlineColorHex" oninput="setBtnOutlineColor(this.value)" maxlength="7"/>
+          </div>
+          <div id="btnOutlinePreviewPill" style="width:60px;height:30px;border-radius:999px;background:transparent;border:1.5px solid #333132;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#333132;">버튼</div>
+        </div>
+      </div>
+
+      <!-- 꺾새 아이콘 -->
+      <div class="divider" id="arrow-section" style="display:none;">
+        <div class="label">꺾새 아이콘</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="upload-btn" style="font-size:12px;padding:7px 12px;" onclick="document.getElementById('arrowFile').click()">› 아이콘 업로드</button>
+          <input type="file" id="arrowFile" accept="image/*" style="display:none;" onchange="loadArrowImg(event)"/>
+          <span id="arrowStatus" style="font-size:11px;color:#bbb;">예) 화살표 아이콘 (PNG 권장)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 미리보기 -->
+    <div class="card">
+      <div class="label" style="font-weight:700;font-size:12px;color:#555;margin-bottom:10px;">미리보기</div>
+      <div id="preview-container"></div>
+      <div id="preview-size-hint" style="font-size:10px;color:#ccc;margin-top:6px;"></div>
+    </div>
+
+    <!-- 추출 -->
+    <div class="card">
+      <div class="label" style="font-weight:700;font-size:12px;color:#555;margin-bottom:10px;">추출 배수 선택</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;" id="mult-btns"></div>
+      <div id="export-size-hint" style="font-size:11px;color:#aaa;margin-bottom:12px;text-align:center;"></div>
+      <button class="export-btn" onclick="exportPNG()">⬇️ PNG 추출</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BANNERS = [
+  {id:"pc_event",label:"PC 이벤트리스트",w:380,h:220},
+  {id:"mo_event",label:"MO 이벤트리스트",w:720,h:320},
+  {id:"mo_main", label:"모바일 인덱스배너",w:327,h:140,radius:16},
+  {id:"pc_kv",   label:"PC 메인키비주얼", w:1050,h:720},
+  {id:"mo_car",  label:"MO 차량리스트",   w:330,h:82,radius:8},
+  {id:"pc_top",  label:"PC 단기예약 상단",w:1920,h:270},
+];
+const FIELDS = {
+  pc_event:["sub_or_partner","round_badge","main","cta"],
+  mo_event:["sub_or_partner","round_badge","main","cta"],
+  mo_main: ["main","sub"],
+  pc_kv:   ["badge","sub","main1","main2","subtext","btn"],
+  mo_car:  ["sub","main1"],
+  pc_top:  ["sub","main1","cta"],
+};
+const FIELD_META = {
+  sub_or_partner:{l:"서브카피 / 제휴사 표기",p:"예) 여름 특가  또는  롯데렌터카 × 롯데호텔",max:28},
+  badge:         {l:"배지 (사각)",p:"예) 단기렌터카"},
+  round_badge:   {l:"배지 (동그란 이벤트)",p:"예) EVENT"},
+  main:          {l:"메인카피 (2줄 입력 가능)",p:"예) 신규 픽업존 이용 시",textarea:true},
+  main1:         {l:"메인카피 1줄",p:"예) 최대 30%",max:14},
+  main2:         {l:"메인카피 2줄",p:"예) 할인 혜택",max:14},
+  sub:           {l:"서브카피",p:"예) 신규 픽업존 오픈 이벤트",max:17},
+  subtext:       {l:"서브텍스트",p:"예) 고객님의 출퇴근을 함께합니다",max:20},
+  btn:           {l:"버튼 텍스트",p:"예) 자세히보기",max:8},
+  cta:           {l:"CTA 텍스트",p:"예) 지금 예약하기",max:12},
+};
+const BADGE_PRESETS = ["단기렌터카","마이카","멤버십","비즈카","차방정","T카"];
+const BG_COLORS = ["#f5f5f5","#ffffff","#333132","#222222","#E70012","#1a4fa0","#e8f4fd"];
+const TEXT_COLORS = ["#333132","#ffffff","#000000","#555555","#888888","#cccccc"];
+const BTN_OUTLINE_COLORS = ["#333132","#ffffff","#000000","#E70012","#1a4fa0","#888888","#cccccc"];
+
+let state = {
+  banner:null, form:{}, bgImg:null, bgColor:"#f5f5f5", textColor:"#333132",
+  badgeColor:"#000000", roundBadgeColor:"#0050FF", btnOutlineColor:"#333132",
+  arrowImg:null, badgeLabel:null, mult:1, imgPos:{x:0,y:0}
+};
+
+function getAutoTextColor(bg) {
+  const dark=["#333132","#222222","#000000","#1a4fa0","#e70012","#E70012"];
+  if(dark.includes(bg)) return "#ffffff";
+  const hex=bg.replace("#","");
+  if(hex.length===6){
+    const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+    return (0.299*r+0.587*g+0.114*b)/255>0.5?"#333132":"#ffffff";
+  }
+  return "#333132";
+}
+
+// Init banner buttons
+function initBannerBtns() {
+  const c = document.getElementById("banner-btns");
+  c.innerHTML = BANNERS.map(b=>`
+    <button class="banner-btn${state.banner?.id===b.id?' active':''}" onclick="selectBanner('${b.id}')">
+      <div class="name">${b.label}</div>
+      <div class="size">${b.w}×${b.h}</div>
+    </button>`).join("");
+}
+
+function selectBanner(id) {
+  state.banner = BANNERS.find(b=>b.id===id);
+  state.form={}; state.bgImg=null; state.bgColor="#f5f5f5"; state.textColor="#333132";
+  state.arrowImg=null; state.imgPos={x:0,y:0}; state.roundBadgeColor="#0050FF";
+  state.btnOutlineColor="#333132"; state.badgeLabel=null;
+  initBannerBtns();
+  document.getElementById("editor").style.display="block";
+  renderAll();
+}
+
+function renderAll() {
+  renderBgSwatches();
+  renderTextSwatches();
+  renderBtnOutlineSwatches();
+  renderColorPickers();
+  renderTextFields();
+  renderBadgePresets();
+  renderSections();
+  renderPreview();
+  renderMultBtns();
+  updateHints();
+}
+
+function renderBgSwatches() {
+  document.getElementById("bg-swatches").innerHTML = BG_COLORS.map(c=>`
+    <div class="color-item" onclick="setBgColor('${c}')">
+      <div class="color-swatch${state.bgColor===c?' active':''}" style="background:${c};"></div>
+      <span class="color-hex${state.bgColor===c?' active':''}">${c}</span>
+    </div>`).join("");
+}
+function renderTextSwatches() {
+  document.getElementById("text-swatches").innerHTML = TEXT_COLORS.map(c=>`
+    <div class="color-item" onclick="setTextColor('${c}')">
+      <div class="color-swatch${state.textColor===c?' active':''}" style="background:${c};"></div>
+      <span class="color-hex${state.textColor===c?' active':''}">${c}</span>
+    </div>`).join("");
+}
+function renderBtnOutlineSwatches() {
+  const el = document.getElementById("btn-outline-swatches");
+  if(!el) return;
+  el.innerHTML = BTN_OUTLINE_COLORS.map(c=>`
+    <div class="color-item" onclick="setBtnOutlineColor('${c}')">
+      <div class="color-swatch${state.btnOutlineColor===c?' active':''}" style="background:${c};"></div>
+      <span class="color-hex${state.btnOutlineColor===c?' active':''}">${c}</span>
+    </div>`).join("");
+}
+function renderColorPickers() {
+  const s = state;
+  setEl("bgColorPreview","style","background:"+s.bgColor);
+  setVal("bgColorNative", s.bgColor.length===7?s.bgColor:"#f5f5f5");
+  setVal("bgColorHex", s.bgColor);
+  setEl("bgColorSquare","style","background:"+s.bgColor+";width:44px;height:44px;border-radius:8px;border:2px solid #ddd;flex-shrink:0;");
+  setEl("textColorPreview","style","background:"+s.textColor);
+  setVal("textColorNative", s.textColor.length===7?s.textColor:"#333132");
+  setVal("textColorHex", s.textColor);
+  const tc=["#ffffff","#fff","#f5f5f5","#cccccc","#888888"].includes(s.textColor)?"#333":"#fff";
+  setEl("textColorSquare","style",`background:${s.textColor};width:44px;height:44px;border-radius:8px;border:2px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${tc};`);
+  setEl("roundBadgeColorPreview","style","background:"+s.roundBadgeColor);
+  setVal("roundBadgeColorNative", s.roundBadgeColor.length===7?s.roundBadgeColor:"#0050FF");
+  setVal("roundBadgeColorHex", s.roundBadgeColor);
+  setEl("roundBadgePreviewPill","style",`width:44px;height:44px;border-radius:50%;background:#fff;border:2px solid ${s.roundBadgeColor};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${s.roundBadgeColor};`);
+  setEl("btnOutlineColorPreview","style","background:"+s.btnOutlineColor);
+  setVal("btnOutlineColorNative", s.btnOutlineColor.length===7?s.btnOutlineColor:"#333132");
+  setVal("btnOutlineColorHex", s.btnOutlineColor);
+  setEl("btnOutlinePreviewPill","style",`width:60px;height:30px;border-radius:999px;background:transparent;border:1.5px solid ${s.btnOutlineColor};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:${s.btnOutlineColor};`);
+}
+function setEl(id,attr,val){const e=document.getElementById(id);if(e)e.setAttribute(attr,val);}
+function setVal(id,val){const e=document.getElementById(id);if(e)e.value=val;}
+
+function renderTextFields() {
+  const b = state.banner;
+  const c = document.getElementById("text-fields");
+  c.innerHTML = (FIELDS[b.id]||[]).map(k=>{
+    const m = FIELD_META[k];
+    const full = ["sub_or_partner","subtext","main"].includes(k);
+    const val = state.form[k]||"";
+    return `<div style="${full?'grid-column:1/-1':''}">
+      <label class="label" style="margin-bottom:3px;">${m.l}${m.max?`<span style="color:#ccc;font-weight:400;"> (최대${m.max}자)</span>`:""}</label>
+      ${m.textarea
+        ? `<textarea class="field-textarea" rows="2" placeholder="${m.p}" oninput="setForm('${k}',this.value,true)">${val}</textarea>`
+        : `<input type="text" class="field-input" placeholder="${m.p}" ${m.max?`maxlength="${m.max}"`:""}
+            value="${val.replace(/"/g,'&quot;')}"
+            oninput="setForm('${k}',this.value${k==='round_badge'?',false,true':''})">`
+      }
+    </div>`;
+  }).join("");
+}
+
+function renderBadgePresets() {
+  const b = state.banner;
+  const sec = document.getElementById("badge-preset-section");
+  if(b.id!=="mo_main"){sec.style.display="none";return;}
+  sec.style.display="block";
+  document.getElementById("badge-presets").innerHTML = BADGE_PRESETS.map(l=>`
+    <button class="badge-preset-btn${state.badgeLabel===l?' active':''}" onclick="toggleBadgeLabel('${l}')">${l}</button>`).join("");
+  const hint = document.getElementById("badge-selected-hint");
+  if(state.badgeLabel){hint.style.display="block";hint.textContent=`✅ ${state.badgeLabel} 선택됨 (다시 클릭하면 해제)`;}
+  else hint.style.display="none";
+}
+
+function renderSections() {
+  const b = state.banner;
+  const hasRound = ["pc_event","mo_event"].includes(b.id);
+  const hasBtn   = (FIELDS[b.id]||[]).includes("btn");
+  const isCar    = b.id==="mo_car";
+  document.getElementById("round-badge-color-section").style.display = hasRound&&state.form.round_badge ? "block":"none";
+  document.getElementById("btn-outline-color-section").style.display = hasBtn ? "block":"none";
+  document.getElementById("arrow-section").style.display = isCar ? "block":"none";
+}
+
+function renderMultBtns() {
+  document.getElementById("mult-btns").innerHTML = [1,2,3,4].map(m=>`
+    <button class="mult-btn${state.mult===m?' active':''}" onclick="setMult(${m})">${m}x</button>`).join("");
+}
+
+function updateHints() {
+  const b = state.banner;
+  if(!b) return;
+  document.getElementById("preview-size-hint").textContent=`실제 추출 사이즈: ${b.w}×${b.h}px`;
+  document.getElementById("export-size-hint").textContent=`추출 사이즈: ${b.w*state.mult}×${b.h*state.mult}px`;
+  document.querySelector(".export-btn").textContent=`⬇️ PNG 추출 (${state.mult}x)`;
+}
+
+// State setters
+function setBgColor(v){state.bgColor=v;state.textColor=getAutoTextColor(v);renderBgSwatches();renderTextSwatches();renderColorPickers();renderPreview();}
+function setTextColor(v){state.textColor=v;renderTextSwatches();renderColorPickers();renderPreview();}
+function setRoundBadgeColor(v){state.roundBadgeColor=v;renderColorPickers();renderPreview();}
+function setBtnOutlineColor(v){state.btnOutlineColor=v;renderBtnOutlineSwatches();renderColorPickers();renderPreview();}
+function setMult(m){state.mult=m;renderMultBtns();updateHints();}
+function setForm(k,v,isTextarea,upper){
+  if(isTextarea && v.split("\n").length>2) return;
+  state.form[k] = upper ? v.toUpperCase() : v;
+  renderSections();
+  renderPreview();
+}
+function toggleBadgeLabel(l){
+  state.badgeLabel = state.badgeLabel===l ? null : l;
+  renderBadgePresets();
+  renderPreview();
+}
+function loadBgImg(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=ev=>{state.bgImg=ev.target.result;state.imgPos={x:0,y:0};
+    document.getElementById("bgStatus").innerHTML=`<span style="font-size:12px;color:#C8001E;font-weight:600;">✅ 업로드됨</span> <span onclick="removeBg()" style="font-size:12px;color:#999;cursor:pointer;">제거</span>`;
+    document.getElementById("bgDragHint").style.display="block";
+    renderPreview();
+  }; r.readAsDataURL(f);
+}
+function removeBg(){state.bgImg=null;state.imgPos={x:0,y:0};
+  document.getElementById("bgStatus").innerHTML=`<span style="font-size:11px;color:#bbb;">예) 차량 사진, 배경 이미지 (JPG/PNG)</span>`;
+  document.getElementById("bgDragHint").style.display="none";
+  renderPreview();
+}
+function loadArrowImg(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=ev=>{state.arrowImg=ev.target.result;
+    document.getElementById("arrowStatus").innerHTML=`<span style="font-size:11px;color:#C8001E;font-weight:600;">✅ 업로드됨</span> <span onclick="removeArrow()" style="font-size:11px;color:#999;cursor:pointer;">제거</span>`;
+    renderPreview();
+  }; r.readAsDataURL(f);
+}
+function removeArrow(){state.arrowImg=null;document.getElementById("arrowStatus").innerHTML=`<span style="font-size:11px;color:#bbb;">예) 화살표 아이콘 (PNG 권장)</span>`;renderPreview();}
+
+// Preview rendering
+function renderPreview() {
+  const b = state.banner;
+  if(!b) return;
+  const scale = Math.min(1, 540/b.w);
+  const S = v => Math.round(v*scale);
+  const con = document.getElementById("preview-container");
+  const dark=["#333132","#222222","#000000","#1a4fa0","#E70012"].includes(state.bgColor);
+  const textCol=state.textColor||(dark?"#fff":"#333132");
+  const subCol=dark?"rgba(255,255,255,0.7)":"#777";
+  const bc=state.bgColor||"#f5f5f5";
+  const f=state.form;
+  const isPartner=(f.sub_or_partner||"").includes("×");
+  const oc=state.btnOutlineColor;
+
+  const wrap=`position:relative;width:${S(b.w)}px;height:${S(b.h)}px;overflow:hidden;background:${bc};font-family:'Apple SD Gothic Neo',sans-serif;border-radius:${b.radius?S(b.radius):0}px;`;
+
+  const imgW=(src,bx,by,iw,ih)=>{
+    const drag=state.imgPos;
+    if(src) return `<img src="${src}" style="position:absolute;left:${S(bx)+drag.x}px;top:${S(by)+drag.y}px;width:${S(iw)}px;height:${S(ih)}px;object-fit:contain;padding:${S(10)}px ${S(20)}px ${S(10)}px 0;box-sizing:border-box;cursor:grab;z-index:2;" id="drag-img"/>`;
+    return `<div style="position:absolute;left:${S(bx)}px;top:${S(by)}px;width:${S(iw)}px;height:${S(ih)}px;background:rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;font-size:${S(11)}px;color:#bbb;z-index:2;"><span style="font-size:${S(16)}px;">🖼️</span><span>이미지 영역</span></div>`;
+  };
+  const T=(txt,x,y,sz,bold,col,maxW)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;font-size:${S(sz)}px;font-weight:${bold?700:400};color:${col||textCol};max-width:${S(maxW||600)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${txt?'visible':'hidden'};">${txt||'X'}</div>`;
+  const Badge=(txt,x,y,fs=11)=>!txt?"":`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:${state.badgeColor};color:#fff;border-radius:${S(6)}px;padding:${S(3)}px ${S(8)}px;font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;">${txt}</div>`;
+  const RoundBadge=(txt,x,y,fs,col)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;display:inline-flex;align-items:center;justify-content:center;padding:${S(6)}px ${S(14)}px;border-radius:${S(50)}px;border:${S(2)}px solid ${col};background:#fff;color:${col};font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;visibility:${txt?'visible':'hidden'};">${txt||'X'}</div>`;
+  const Btn=(txt,x,y,fs=12)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:transparent;border-radius:${S(999)}px;border:${S(1)}px solid ${oc};padding:${S(10)}px ${S(32)}px;font-size:${S(fs)}px;color:${oc};white-space:nowrap;z-index:3;display:inline-flex;align-items:center;visibility:${txt?'visible':'hidden'};">${txt||'버튼'}</div>`;
+  const Cta=(txt,x,y,fs=12)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:#C8001E;color:#fff;border-radius:${S(4)}px;padding:${S(8)}px ${S(16)}px;font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;display:flex;align-items:center;gap:${S(4)}px;visibility:${txt?'visible':'hidden'};">${txt||'CTA'}<span style="font-size:${S(fs+2)}px;">›</span></div>`;
+
+  let html="";
+  const id=b.id;
+  if(id==="pc_event"){
+    const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
+    html=imgW(state.bgImg,b.w-130,0,130,b.h)+RoundBadge(f.round_badge,25,30,13,state.roundBadgeColor)+T(f.sub_or_partner,25,80,isPartner?12:13,false,subCol,285)+T(l1,25,108,22,true,null,285)+T(l2,25,138,22,true,null,285)+Cta(f.cta,25,b.h-52,11);
+  } else if(id==="mo_event"){
+    const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
+    html=imgW(state.bgImg,b.w-290,(b.h-252)/2,290,252)+RoundBadge(f.round_badge,40,43,18,state.roundBadgeColor)+T(f.sub_or_partner,40,116,isPartner?18:20,false,subCol,460)+T(l1,40,162,32,true,null,460)+T(l2,40,206,32,true,null,460)+Cta(f.cta,40,b.h-68,13);
+  } else if(id==="mo_main"){
+    const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
+    const bh=state.badgeLabel?26:0;
+    const badge=state.badgeLabel?`<div style="position:absolute;left:0;top:0;z-index:4;background:rgba(0,0,0,0.85);color:#fff;border-radius:0 0 ${S(16)}px 0;padding:${S(4)}px ${S(13)}px;font-size:${S(12)}px;font-weight:700;white-space:nowrap;">${state.badgeLabel}</div>`:"";
+    html=imgW(state.bgImg,b.w-120-18,18,120,b.h-36)+badge+T(l1,16,bh+20,18,true,null,174)+T(l2,16,bh+44,18,true,null,174)+T(f.sub,16,bh+72,14,false,subCol,174);
+  } else if(id==="pc_kv"){
+    html=imgW(state.bgImg,b.w-50-400,82,400,380)+Badge(f.badge,142,114,13)+T(f.sub,142,152,20,false,subCol,380)+T(f.main1,142,192,36,true,null,380)+T(f.main2,142,240,36,true,null,380)+T(f.subtext,142,300,14,false,subCol,380)+Btn(f.btn,142,360,14);
+  } else if(id==="mo_car"){
+    const arrow=state.arrowImg?`<img src="${state.arrowImg}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;"/>`:`<span style="font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:1;">›</span>`;
+    html=imgW(state.bgImg,b.w-115,0,115,b.h)+T(f.sub,20,18,13,false,subCol,200)+`<div style="position:absolute;left:${S(20)}px;top:${S(38)}px;display:flex;align-items:center;gap:${S(4)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};"><span style="font-size:${S(15)}px;font-weight:700;color:${textCol};">${f.main1||'메인'}</span>${arrow}</div>`;
+  } else if(id==="pc_top"){
+    html=imgW(state.bgImg,b.w-560,20,200,150)+T(f.sub,360,60,16,false,subCol,600)+T(f.main1,360,92,26,true,null,600)+Cta(f.cta,360,148,13)+`<div style="position:absolute;bottom:0;left:0;right:0;height:${S(90)}px;background:rgba(30,100,200,0.1);display:flex;align-items:center;justify-content:center;font-size:${S(11)}px;color:#aaa;">예약 영역</div>`;
+  }
+
+  con.innerHTML=`<div style="${wrap}" id="preview-box">${html}</div>`;
+
+  // Drag
+  const box=document.getElementById("preview-box");
+  const dimg=document.getElementById("drag-img");
+  if(dimg){
+    dimg.addEventListener("mousedown",e=>{
+      e.preventDefault();
+      const sx=e.clientX-state.imgPos.x,sy=e.clientY-state.imgPos.y;
+      const mv=ev=>{state.imgPos={x:ev.clientX-sx,y:ev.clientY-sy};renderPreview();};
+      const up=()=>{window.removeEventListener("mousemove",mv);window.removeEventListener("mouseup",up);};
+      window.addEventListener("mousemove",mv);window.addEventListener("mouseup",up);
+    });
+    dimg.style.cursor="grab";
+    if(state.bgImg){
+      const hint=document.createElement("div");
+      hint.style.cssText=`position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.45);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;pointer-events:none;z-index:5;`;
+      hint.textContent="⠿ 드래그";
+      box.appendChild(hint);
+    }
+  }
+}
+
+// Export
+async function exportPNG() {
+  const b=state.banner; if(!b) return;
+  const m=state.mult;
+  const {w,h,id,radius}=b;
+  const canvas=document.createElement("canvas");
+  canvas.width=w*m; canvas.height=h*m;
+  const ctx=canvas.getContext("2d");
+  ctx.scale(m,m);
+  const SCALE=Math.min(1,540/b.w);
+  if(radius){ctx.save();ctx.beginPath();ctx.roundRect(0,0,w,h,radius);ctx.clip();}
+  ctx.fillStyle=state.bgColor||"#f5f5f5"; ctx.fillRect(0,0,w,h);
+
+  const loadImg=src=>new Promise(res=>{if(!src){res(null);return;}const img=new Image();img.onload=()=>res(img);img.src=src;});
+  const drawImg=async(src,bx,by,iw,ih)=>{
+    const img=await loadImg(src);if(!img)return;
+    const dx=bx+state.imgPos.x/SCALE,dy=by+state.imgPos.y/SCALE;
+    ctx.save();ctx.beginPath();ctx.rect(dx,dy,iw,ih);ctx.clip();
+    const ratio=Math.min(iw/img.width,ih/img.height);
+    ctx.drawImage(img,dx+(iw-img.width*ratio)/2,dy+(ih-img.height*ratio)/2,img.width*ratio,img.height*ratio);
+    ctx.restore();
+  };
+  const dark=["#333132","#222222","#000000","#1a4fa0","#E70012"].includes(state.bgColor);
+  const textCol=state.textColor||(dark?"#ffffff":"#333132");
+  const subCol=dark?"rgba(255,255,255,0.7)":"#777777";
+  const isPartner=(state.form.sub_or_partner||"").includes("×");
+  const f=state.form;
+
+  const t=(txt,x,y,sz,bold,color,mW=9999)=>{if(!txt)return;ctx.save();ctx.font=`${bold?"700":"400"} ${sz}px Arial,sans-serif`;ctx.fillStyle=color||textCol;ctx.fillText(txt,x,y,mW);ctx.restore();};
+  const badgeBox=(txt,x,y,fs=11)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=8,py=3;ctx.fillStyle=state.badgeColor;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2+2,6);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
+  const roundBadgeBox=(txt,x,y,fs,color)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=14,py=6;ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2,50);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=color;ctx.fillText(txt,x+px,y+fs+py-1);ctx.restore();};
+  const ctaBox=(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const lb=txt+" ›",tw=ctx.measureText(lb).width,px=16,py=8;ctx.fillStyle="#C8001E";ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2+2,4);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(lb,x+px,y+fs+py);ctx.restore();};
+  const btnBox=(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`500 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=32,py=10,bh=fs+py*2+2;ctx.strokeStyle=state.btnOutlineColor;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,bh,bh/2);ctx.stroke();ctx.fillStyle=state.btnOutlineColor;ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
+
+  if(id==="pc_event"){
+    await drawImg(state.bgImg,w-130,0,130,h);
+    roundBadgeBox(f.round_badge,25,30,13,state.roundBadgeColor);
+    t(f.sub_or_partner,25,96,isPartner?12:13,false,subCol);
+    const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
+    t(l1,25,130,22,true);t(l2,25,160,22,true);
+    ctaBox(f.cta,25,h-52,11);
+  } else if(id==="mo_event"){
+    await drawImg(state.bgImg,w-290,(h-252)/2,290,252);
+    roundBadgeBox(f.round_badge,40,43,18,state.roundBadgeColor);
+    t(f.sub_or_partner,40,138,isPartner?18:20,false,subCol);
+    const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
+    t(l1,40,186,32,true);t(l2,40,230,32,true);
+    ctaBox(f.cta,40,h-68,13);
+  } else if(id==="mo_main"){
+    await drawImg(state.bgImg,w-120-18,18,120,h-36);
+    if(state.badgeLabel){
+      ctx.save();ctx.font=`700 12px Arial,sans-serif`;
+      const tw=ctx.measureText(state.badgeLabel).width,px=13,py=4,bh=12+py*2,bw=tw+px*2;
+      ctx.fillStyle="rgba(0,0,0,0.85)";ctx.beginPath();
+      ctx.moveTo(0,0);ctx.lineTo(bw,0);ctx.lineTo(bw,bh-16);
+      ctx.quadraticCurveTo(bw,bh,bw-16,bh);ctx.lineTo(0,bh);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(state.badgeLabel,px,bh/2);ctx.restore();
+    }
+    const bh2=state.badgeLabel?26:0;
+    const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
+    t(l1,16,bh2+38,18,true);t(l2,16,bh2+62,18,true);t(f.sub,16,bh2+90,14,false,subCol);
+  } else if(id==="pc_kv"){
+    await drawImg(state.bgImg,w-50-400,82,400,380);
+    badgeBox(f.badge,142,114,13);
+    t(f.sub,142,172,20,false,subCol);t(f.main1,142,228,36,true);t(f.main2,142,276,36,true);
+    t(f.subtext,142,314,14,false,subCol);btnBox(f.btn,142,360,14);
+  } else if(id==="mo_car"){
+    await drawImg(state.bgImg,w-115,0,115,h);
+    t(f.sub,20,32,13,false,subCol);t(f.main1,20,56,15,true);
+    const ai=await loadImg(state.arrowImg);
+    if(ai){ctx.drawImage(ai,20+(f.main1?ctx.measureText(f.main1).width+8:0),40,20,20);}
+    else if(f.main1){ctx.save();ctx.font="700 22px Arial";ctx.fillStyle=textCol;ctx.fillText("›",20+ctx.measureText(f.main1).width+8,58);ctx.restore();}
+  } else if(id==="pc_top"){
+    await drawImg(state.bgImg,w-560,20,200,150);
+    t(f.sub,360,80,16,false,subCol);t(f.main1,360,118,26,true);
+    ctaBox(f.cta,360,148,13);
+    ctx.fillStyle="rgba(30,100,200,0.1)";ctx.fillRect(0,h-90,w,90);
+  }
+  if(radius) ctx.restore();
+  const a=document.createElement("a");
+  a.download=`${b.label}_${w*m}x${h*m}.png`;
+  a.href=canvas.toDataURL("image/png");a.click();
+}
+
+initBannerBtns();
+</script>
+</body>
+</html>
