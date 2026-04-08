@@ -24,7 +24,7 @@ body{background:#f2f2f2;font-family:'Apple SD Gothic Neo',sans-serif;padding:20p
 .color-swatch.active{border:3px solid #C8001E;box-shadow:0 0 0 2px #fff inset;}
 .color-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .color-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;}
-.color-hex{font-size:9px;color:#aaa;font-weight:400;}
+.color-hex{font-size:9px;color:#aaa;}
 .color-hex.active{color:#C8001E;font-weight:700;}
 .cpicker-row{display:flex;gap:8px;align-items:center;}
 .cpicker-box{position:relative;width:44px;height:44px;flex-shrink:0;}
@@ -46,7 +46,7 @@ body{background:#f2f2f2;font-family:'Apple SD Gothic Neo',sans-serif;padding:20p
     <div style="background:#C8001E;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;">🎨</div>
     <div>
       <div style="font-weight:800;font-size:15px;color:#111;">롯데렌터카 배너 에디터</div>
-      <div style="font-size:11px;color:#999;">이미지 업로드 → 텍스트 입력 → PNG 추출</div>
+      <div style="font-size:11px;color:#999;">이미지 업로드 또는 URL 입력 → 텍스트 입력 → PNG 추출</div>
     </div>
   </div>
 
@@ -60,11 +60,13 @@ body{background:#f2f2f2;font-family:'Apple SD Gothic Neo',sans-serif;padding:20p
       <div style="font-weight:700;font-size:12px;color:#555;margin-bottom:12px;">배경 설정</div>
       <div style="margin-bottom:14px;">
         <div class="label">배경 이미지</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button class="upload-btn" onclick="document.getElementById('bgFile').click()">🖼️ 이미지 업로드</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <button class="upload-btn" onclick="document.getElementById('bgFile').click()">🖼️ 파일 업로드</button>
           <input type="file" id="bgFile" accept="image/*" style="display:none;" onchange="loadBgImg(event)"/>
-          <span id="bgStatus" style="font-size:11px;color:#bbb;">예) 차량 사진, 배경 이미지 (JPG/PNG)</span>
+          <span id="bgFileStatus" style="font-size:11px;color:#bbb;"></span>
         </div>
+        <div class="sub-label">또는 이미지 URL 직접 입력</div>
+        <input type="text" class="field-input" id="bgUrlInput" placeholder="예) https://cdn.example.com/car.png" oninput="setBgUrl(this.value)"/>
         <div id="bgDragHint" style="font-size:11px;color:#aaa;margin-top:6px;display:none;">💡 미리보기에서 이미지를 드래그해서 위치 조정 가능해요</div>
       </div>
       <div>
@@ -130,11 +132,13 @@ body{background:#f2f2f2;font-family:'Apple SD Gothic Neo',sans-serif;padding:20p
 
       <div class="divider" id="arrow-section" style="display:none;">
         <div class="label">꺾새 아이콘</div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button class="upload-btn" style="font-size:12px;padding:7px 12px;" onclick="document.getElementById('arrowFile').click()">› 아이콘 업로드</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <button class="upload-btn" style="font-size:12px;padding:7px 12px;" onclick="document.getElementById('arrowFile').click()">› 파일 업로드</button>
           <input type="file" id="arrowFile" accept="image/*" style="display:none;" onchange="loadArrowImg(event)"/>
-          <span id="arrowStatus" style="font-size:11px;color:#bbb;">예) 화살표 아이콘 (PNG 권장)</span>
+          <span id="arrowFileStatus" style="font-size:11px;color:#bbb;"></span>
         </div>
+        <div class="sub-label">또는 아이콘 URL 직접 입력</div>
+        <input type="text" class="field-input" placeholder="예) https://cdn.example.com/arrow.png" oninput="setArrowUrl(this.value)"/>
       </div>
     </div>
 
@@ -215,7 +219,9 @@ function selectBanner(id){
   state.btnOutlineColor="#333132";state.badgeLabel=null;
   document.getElementById("bgFile").value="";
   document.getElementById("arrowFile").value="";
-  document.getElementById("bgStatus").innerHTML=`<span style="font-size:11px;color:#bbb;">예) 차량 사진, 배경 이미지 (JPG/PNG)</span>`;
+  document.getElementById("bgUrlInput").value="";
+  document.getElementById("bgFileStatus").textContent="";
+  document.getElementById("arrowFileStatus").textContent="";
   document.getElementById("bgDragHint").style.display="none";
   initBannerBtns();
   document.getElementById("editor").style.display="block";
@@ -251,27 +257,24 @@ function renderBtnOutlineSwatches(){
     </div>`).join("");
 }
 
-function setElStyle(id,style){const e=document.getElementById(id);if(e)e.setAttribute("style",style);}
-function setVal(id,val){const e=document.getElementById(id);if(e)e.value=val;}
-
 function renderColorPickers(){
   const s=state;
   document.getElementById("bgColorPreview").style.background=s.bgColor;
-  setVal("bgColorNative",s.bgColor.length===7?s.bgColor:"#f5f5f5");
-  setVal("bgColorHex",s.bgColor);
+  document.getElementById("bgColorNative").value=s.bgColor.length===7?s.bgColor:"#f5f5f5";
+  document.getElementById("bgColorHex").value=s.bgColor;
   document.getElementById("bgColorSquare").style.background=s.bgColor;
   document.getElementById("textColorPreview").style.background=s.textColor;
-  setVal("textColorNative",s.textColor.length===7?s.textColor:"#333132");
-  setVal("textColorHex",s.textColor);
+  document.getElementById("textColorNative").value=s.textColor.length===7?s.textColor:"#333132";
+  document.getElementById("textColorHex").value=s.textColor;
   const tc=["#ffffff","#fff","#f5f5f5","#cccccc","#888888"].includes(s.textColor)?"#333":"#fff";
   document.getElementById("textColorSquare").style.cssText=`width:44px;height:44px;border-radius:8px;border:2px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${s.textColor};color:${tc};`;
   document.getElementById("roundBadgeColorPreview").style.background=s.roundBadgeColor;
-  setVal("roundBadgeColorNative",s.roundBadgeColor.length===7?s.roundBadgeColor:"#0050FF");
-  setVal("roundBadgeColorHex",s.roundBadgeColor);
+  document.getElementById("roundBadgeColorNative").value=s.roundBadgeColor.length===7?s.roundBadgeColor:"#0050FF";
+  document.getElementById("roundBadgeColorHex").value=s.roundBadgeColor;
   document.getElementById("roundBadgePreviewPill").style.cssText=`width:44px;height:44px;border-radius:50%;background:#fff;border:2px solid ${s.roundBadgeColor};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${s.roundBadgeColor};`;
   document.getElementById("btnOutlineColorPreview").style.background=s.btnOutlineColor;
-  setVal("btnOutlineColorNative",s.btnOutlineColor.length===7?s.btnOutlineColor:"#333132");
-  setVal("btnOutlineColorHex",s.btnOutlineColor);
+  document.getElementById("btnOutlineColorNative").value=s.btnOutlineColor.length===7?s.btnOutlineColor:"#333132";
+  document.getElementById("btnOutlineColorHex").value=s.btnOutlineColor;
   document.getElementById("btnOutlinePreviewPill").style.cssText=`width:60px;height:30px;border-radius:999px;background:transparent;border:1.5px solid ${s.btnOutlineColor};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:${s.btnOutlineColor};`;
 }
 
@@ -297,7 +300,7 @@ function renderBadgePresets(){
   document.getElementById("badge-presets").innerHTML=BADGE_PRESETS.map(l=>`
     <button class="badge-preset-btn${state.badgeLabel===l?' active':''}" onclick="toggleBadgeLabel('${l}')">${l}</button>`).join("");
   const hint=document.getElementById("badge-selected-hint");
-  if(state.badgeLabel){hint.style.display="block";hint.textContent=`✅ ${state.badgeLabel} 선택됨 (다시 클릭하면 해제)`;}
+  if(state.badgeLabel){hint.style.display="block";hint.textContent=`✅ ${state.badgeLabel} 선택됨`;}
   else hint.style.display="none";
 }
 
@@ -335,33 +338,37 @@ function setForm(k,v,isTextarea,upper){
 }
 function toggleBadgeLabel(l){state.badgeLabel=state.badgeLabel===l?null:l;renderBadgePresets();renderPreview();}
 
-function loadImg(file, setter, statusId, hintId){
-  try {
-    const url = URL.createObjectURL(file);
-    setter(url);
-    if(hintId) document.getElementById(hintId).style.display="block";
-    document.getElementById(statusId).innerHTML=`<span style="font-size:12px;color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
-    renderPreview();
-  } catch(e) {
-    const r=new FileReader();
-    r.onload=ev=>{
-      setter(ev.target.result);
-      if(hintId) document.getElementById(hintId).style.display="block";
-      document.getElementById(statusId).innerHTML=`<span style="font-size:12px;color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
-      renderPreview();
-    };
-    r.readAsDataURL(file);
-  }
+function setBgUrl(v){
+  if(!v.trim()){state.bgImg=null;renderPreview();return;}
+  state.bgImg=v.trim();state.imgPos={x:0,y:0};
+  document.getElementById("bgDragHint").style.display="block";
+  renderPreview();
 }
-
+function setArrowUrl(v){
+  state.arrowImg=v.trim()||null;
+  renderPreview();
+}
 function loadBgImg(e){
   const f=e.target.files[0];if(!f)return;
   state.imgPos={x:0,y:0};
-  loadImg(f, v=>{state.bgImg=v;}, "bgStatus", "bgDragHint");
+  const r=new FileReader();
+  r.onload=ev=>{
+    state.bgImg=ev.target.result;
+    document.getElementById("bgFileStatus").innerHTML=`<span style="color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
+    document.getElementById("bgDragHint").style.display="block";
+    renderPreview();
+  };
+  r.readAsDataURL(f);
 }
 function loadArrowImg(e){
   const f=e.target.files[0];if(!f)return;
-  loadImg(f, v=>{state.arrowImg=v;}, "arrowStatus", null);
+  const r=new FileReader();
+  r.onload=ev=>{
+    state.arrowImg=ev.target.result;
+    document.getElementById("arrowFileStatus").innerHTML=`<span style="color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
+    renderPreview();
+  };
+  r.readAsDataURL(f);
 }
 
 function renderPreview(){
@@ -378,7 +385,7 @@ function renderPreview(){
   const wrap=`position:relative;width:${S(b.w)}px;height:${S(b.h)}px;overflow:hidden;background:${bc};font-family:'Apple SD Gothic Neo',sans-serif;border-radius:${b.radius?S(b.radius):0}px;`;
 
   const imgW=(src,bx,by,iw,ih)=>{
-    const dx=S(bx)+state.imgPos.x, dy=S(by)+state.imgPos.y;
+    const dx=S(bx)+state.imgPos.x,dy=S(by)+state.imgPos.y;
     if(src)return`<img src="${src}" style="position:absolute;left:${dx}px;top:${dy}px;width:${S(iw)}px;height:${S(ih)}px;object-fit:contain;padding:${S(10)}px ${S(20)}px ${S(10)}px 0;box-sizing:border-box;cursor:grab;z-index:2;" id="drag-img" draggable="false"/>`;
     return`<div style="position:absolute;left:${S(bx)}px;top:${S(by)}px;width:${S(iw)}px;height:${S(ih)}px;background:rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;font-size:${S(11)}px;color:#bbb;z-index:2;"><span style="font-size:${S(16)}px;">🖼️</span><span>이미지 영역</span></div>`;
   };
@@ -410,7 +417,6 @@ function renderPreview(){
   }
 
   document.getElementById("preview-container").innerHTML=`<div style="${wrap}" id="preview-box">${html}</div>`;
-
   const dimg=document.getElementById("drag-img");
   if(dimg){
     dimg.addEventListener("mousedown",e=>{
@@ -437,9 +443,8 @@ async function exportPNG(){
   const loadImgEl=src=>new Promise(res=>{
     if(!src){res(null);return;}
     const img=new Image();
-    img.onload=()=>res(img);
-    img.onerror=()=>res(null);
-    img.src=src;
+    img.crossOrigin="anonymous";
+    img.onload=()=>res(img);img.onerror=()=>res(null);img.src=src;
   });
   const drawImg=async(src,bx,by,iw,ih)=>{
     const img=await loadImgEl(src);if(!img)return;
@@ -462,14 +467,12 @@ async function exportPNG(){
   const btnBox=(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`500 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=32,py=10,bh=fs+py*2+2;ctx.strokeStyle=state.btnOutlineColor;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,bh,bh/2);ctx.stroke();ctx.fillStyle=state.btnOutlineColor;ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
 
   if(id==="pc_event"){
-    await drawImg(state.bgImg,w-130,0,130,h);
-    roundBadgeBox(f.round_badge,25,30,13,state.roundBadgeColor);
+    await drawImg(state.bgImg,w-130,0,130,h);roundBadgeBox(f.round_badge,25,30,13,state.roundBadgeColor);
     t(f.sub_or_partner,25,96,isPartner?12:13,false,subCol);
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     t(l1,25,130,22,true);t(l2,25,160,22,true);ctaBox(f.cta,25,h-52,11);
   }else if(id==="mo_event"){
-    await drawImg(state.bgImg,w-290,(h-252)/2,290,252);
-    roundBadgeBox(f.round_badge,40,43,18,state.roundBadgeColor);
+    await drawImg(state.bgImg,w-290,(h-252)/2,290,252);roundBadgeBox(f.round_badge,40,43,18,state.roundBadgeColor);
     t(f.sub_or_partner,40,138,isPartner?18:20,false,subCol);
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     t(l1,40,186,32,true);t(l2,40,230,32,true);ctaBox(f.cta,40,h-68,13);
@@ -478,8 +481,7 @@ async function exportPNG(){
     if(state.badgeLabel){
       ctx.save();ctx.font=`700 12px Arial,sans-serif`;
       const tw=ctx.measureText(state.badgeLabel).width,px=13,py=4,bh=12+py*2,bw=tw+px*2;
-      ctx.fillStyle="rgba(0,0,0,0.85)";ctx.beginPath();
-      ctx.moveTo(0,0);ctx.lineTo(bw,0);ctx.lineTo(bw,bh-16);
+      ctx.fillStyle="rgba(0,0,0,0.85)";ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(bw,0);ctx.lineTo(bw,bh-16);
       ctx.quadraticCurveTo(bw,bh,bw-16,bh);ctx.lineTo(0,bh);ctx.closePath();ctx.fill();
       ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(state.badgeLabel,px,bh/2);ctx.restore();
     }
@@ -487,20 +489,18 @@ async function exportPNG(){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     t(l1,16,bh2+38,18,true);t(l2,16,bh2+62,18,true);t(f.sub,16,bh2+90,14,false,subCol);
   }else if(id==="pc_kv"){
-    await drawImg(state.bgImg,w-50-400,82,400,380);
-    badgeBox(f.badge,142,114,13);t(f.sub,142,172,20,false,subCol);
-    t(f.main1,142,228,36,true);t(f.main2,142,276,36,true);
+    await drawImg(state.bgImg,w-50-400,82,400,380);badgeBox(f.badge,142,114,13);
+    t(f.sub,142,172,20,false,subCol);t(f.main1,142,228,36,true);t(f.main2,142,276,36,true);
     t(f.subtext,142,314,14,false,subCol);btnBox(f.btn,142,360,14);
   }else if(id==="mo_car"){
-    await drawImg(state.bgImg,w-115,0,115,h);
-    t(f.sub,20,32,13,false,subCol);t(f.main1,20,56,15,true);
+    await drawImg(state.bgImg,w-115,0,115,h);t(f.sub,20,32,13,false,subCol);t(f.main1,20,56,15,true);
     const ai=await loadImgEl(state.arrowImg);
     if(ai)ctx.drawImage(ai,20+(f.main1?ctx.measureText(f.main1).width+8:0),40,20,20);
     else if(f.main1){ctx.save();ctx.font="700 22px Arial";ctx.fillStyle=textCol;ctx.fillText("›",20+ctx.measureText(f.main1).width+8,58);ctx.restore();}
   }else if(id==="pc_top"){
-    await drawImg(state.bgImg,w-560,20,200,150);
-    t(f.sub,360,80,16,false,subCol);t(f.main1,360,118,26,true);
-    ctaBox(f.cta,360,148,13);ctx.fillStyle="rgba(30,100,200,0.1)";ctx.fillRect(0,h-90,w,90);
+    await drawImg(state.bgImg,w-560,20,200,150);t(f.sub,360,80,16,false,subCol);
+    t(f.main1,360,118,26,true);ctaBox(f.cta,360,148,13);
+    ctx.fillStyle="rgba(30,100,200,0.1)";ctx.fillRect(0,h-90,w,90);
   }
   if(radius)ctx.restore();
   const a=document.createElement("a");
