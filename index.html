@@ -338,18 +338,19 @@ function toggleBadgeLabel(l){state.badgeLabel=state.badgeLabel===l?null:l;render
 function loadImg(file, setter, statusId, hintId){
   const r=new FileReader();
   r.onload=ev=>{
-    // 이미지 객체로 먼저 로드해서 유효성 확인
-    const img=new Image();
-    img.onload=()=>{
-      setter(ev.target.result);
-      if(hintId) document.getElementById(hintId).style.display="block";
-      document.getElementById(statusId).innerHTML=`<span style="font-size:12px;color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
-      renderPreview();
-    };
-    img.onerror=()=>alert("이미지를 불러올 수 없어요. 다른 파일을 시도해보세요.");
-    img.src=ev.target.result;
+    setter(ev.target.result);
+    if(hintId) document.getElementById(hintId).style.display="block";
+    document.getElementById(statusId).innerHTML=`<span style="font-size:12px;color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
+    renderPreview();
   };
-  r.onerror=()=>alert("파일을 읽을 수 없어요.");
+  r.onerror=()=>{
+    // URL.createObjectURL 방식으로 폴백
+    const url=URL.createObjectURL(file);
+    setter(url);
+    if(hintId) document.getElementById(hintId).style.display="block";
+    document.getElementById(statusId).innerHTML=`<span style="font-size:12px;color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
+    renderPreview();
+  };
   r.readAsDataURL(file);
 }
 
