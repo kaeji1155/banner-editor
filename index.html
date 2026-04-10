@@ -99,7 +99,6 @@ body{background:#f2f2f2;font-family:'Pretendard','Apple SD Gothic Neo',sans-seri
         <div id="badge-selected-hint" style="font-size:10px;color:#C8001E;margin-top:6px;font-weight:600;display:none;"></div>
       </div>
       <div class="grid2" id="text-fields"></div>
-
       <div class="divider">
         <div class="label">텍스트 색상</div>
         <div class="color-row" id="text-swatches"></div>
@@ -112,7 +111,6 @@ body{background:#f2f2f2;font-family:'Pretendard','Apple SD Gothic Neo',sans-seri
           <div id="textColorSquare" style="width:44px;height:44px;border-radius:8px;border:2px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">Aa</div>
         </div>
       </div>
-
       <div class="divider" id="round-badge-color-section" style="display:none;">
         <div class="label">이벤트 배지 색상</div>
         <div class="cpicker-row">
@@ -124,7 +122,6 @@ body{background:#f2f2f2;font-family:'Pretendard','Apple SD Gothic Neo',sans-seri
           <div id="roundBadgePreviewPill" style="width:44px;height:44px;border-radius:50%;background:#fff;border:2px solid #0050FF;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0050FF;">EVENT</div>
         </div>
       </div>
-
       <div class="divider" id="btn-outline-color-section" style="display:none;">
         <div class="label">버튼 아웃라인 색상</div>
         <div class="color-row" id="btn-outline-swatches"></div>
@@ -137,7 +134,6 @@ body{background:#f2f2f2;font-family:'Pretendard','Apple SD Gothic Neo',sans-seri
           <div id="btnOutlinePreviewPill" style="width:60px;height:30px;border-radius:999px;background:transparent;border:1.5px solid #333132;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#333132;">버튼</div>
         </div>
       </div>
-
       <div class="divider" id="arrow-section" style="display:none;">
         <div class="label">꺾새 아이콘</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
@@ -198,9 +194,10 @@ const BADGE_PRESETS=["단기렌터카","마이카","멤버십","비즈카","차�
 const BG_COLORS=["#f5f5f5","#ffffff","#333132","#222222","#E70012","#1a4fa0","#e8f4fd"];
 const TEXT_COLORS=["#333132","#ffffff","#000000","#555555","#888888","#cccccc"];
 const BTN_OUTLINE_COLORS=["#333132","#ffffff","#000000","#E70012","#1a4fa0","#888888","#cccccc"];
-const CHEVRON_SVG=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0)"><path d="M7.35921 3.84801C6.88026 4.31202 6.88026 5.06433 7.35921 5.52834L14.0392 12L7.35921 18.4717C6.88026 18.9357 6.88026 19.688 7.35921 20.152C7.83815 20.616 8.61468 20.616 9.09362 20.152L16.6408 12.8402C17.1197 12.3762 17.1197 11.6238 16.6408 11.1598L9.09362 3.84801C8.61468 3.384 7.83815 3.384 7.35921 3.84801Z" fill="#666666"/></g><defs><clipPath id="clip0"><rect width="24" height="24" fill="white"/></clipPath></defs></svg>`;
+const CHEVRON_SVG=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#c1)"><path d="M7.35921 3.84801C6.88026 4.31202 6.88026 5.06433 7.35921 5.52834L14.0392 12L7.35921 18.4717C6.88026 18.9357 6.88026 19.688 7.35921 20.152C7.83815 20.616 8.61468 20.616 9.09362 20.152L16.6408 12.8402C17.1197 12.3762 17.1197 11.6238 16.6408 11.1598L9.09362 3.84801C8.61468 3.384 7.83815 3.384 7.35921 3.84801Z" fill="#666666"/></g><defs><clipPath id="c1"><rect width="24" height="24" fill="white"/></clipPath></defs></svg>`;
 const CHEVRON=`data:image/svg+xml;base64,${btoa(CHEVRON_SVG)}`;
 const CHEVRON_WHITE=`data:image/svg+xml;base64,${btoa(CHEVRON_SVG.replace('fill="#666666"','fill="#ffffff"'))}`;
+const FONT=`Pretendard,'Apple SD Gothic Neo',Arial,sans-serif`;
 
 let state={
   banner:null,form:{},bgImg:null,bgColor:"#f5f5f5",textColor:"#333132",
@@ -268,7 +265,6 @@ function renderBtnOutlineSwatches(){
       <span class="color-hex${state.btnOutlineColor===c?' active':''}">${c}</span>
     </div>`).join("");
 }
-
 function renderColorPickers(){
   const s=state;
   document.getElementById("bgColorPreview").style.background=s.bgColor;
@@ -289,7 +285,6 @@ function renderColorPickers(){
   document.getElementById("btnOutlineColorHex").value=s.btnOutlineColor;
   document.getElementById("btnOutlinePreviewPill").style.cssText=`width:60px;height:30px;border-radius:999px;background:transparent;border:1.5px solid ${s.btnOutlineColor};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:${s.btnOutlineColor};`;
 }
-
 function renderTextFields(){
   const b=state.banner;
   document.getElementById("text-fields").innerHTML=(FIELDS[b.id]||[]).map(k=>{
@@ -304,7 +299,6 @@ function renderTextFields(){
       }</div>`;
   }).join("");
 }
-
 function renderBadgePresets(){
   const b=state.banner;const sec=document.getElementById("badge-preset-section");
   if(b.id!=="mo_main"){sec.style.display="none";return;}
@@ -315,7 +309,6 @@ function renderBadgePresets(){
   if(state.badgeLabel){hint.style.display="block";hint.textContent=`✅ ${state.badgeLabel} 선택됨`;}
   else hint.style.display="none";
 }
-
 function renderSections(){
   const b=state.banner;
   const hasRound=["pc_event","mo_event"].includes(b.id);
@@ -325,12 +318,10 @@ function renderSections(){
   document.getElementById("btn-outline-color-section").style.display=hasBtn?"block":"none";
   document.getElementById("arrow-section").style.display=isCar?"block":"none";
 }
-
 function renderMultBtns(){
   document.getElementById("mult-btns").innerHTML=[1,2,3,4].map(m=>`
     <button class="mult-btn${state.mult===m?' active':''}" onclick="setMult(${m})">${m}x</button>`).join("");
 }
-
 function updateHints(){
   const b=state.banner;if(!b)return;
   document.getElementById("preview-size-hint").textContent=`실제 추출 사이즈: ${b.w}×${b.h}px`;
@@ -350,7 +341,6 @@ function setForm(k,v,isTextarea,upper){
   renderSections();renderPreview();
 }
 function toggleBadgeLabel(l){state.badgeLabel=state.badgeLabel===l?null:l;renderBadgePresets();renderPreview();}
-
 function setBgUrl(v){
   if(!v.trim()){state.bgImg=null;renderPreview();return;}
   state.bgImg=v.trim();state.imgPos={x:0,y:0};
@@ -389,18 +379,14 @@ function renderPreview(){
   const b=state.banner;if(!b)return;
   const scale=Math.min(1,540/b.w);
   const S=v=>Math.round(v*scale);
-  // Pretendard 폰트 로드 후 추출
-  await document.fonts.load(`700 45px Pretendard`);
-  await document.fonts.load(`400 20px Pretendard`);
-  const FONT = `Pretendard,'Apple SD Gothic Neo',Arial,sans-serif`;
+  const dark=["#333132","#222222","#000000","#1a4fa0","#E70012"].includes(state.bgColor);
   const textCol=state.textColor||(dark?"#fff":"#333132");
-  const subCol=dark?"rgba(255,255,255,0.7)":"#777";
   const bc=state.bgColor||"#f5f5f5";
   const f=state.form;
   const isPartner=(f.sub_or_partner||"").includes("×");
   const oc=state.btnOutlineColor;
   const sc=state.bgScale/100;
-  const wrap=`position:relative;width:${S(b.w)}px;height:${S(b.h)}px;overflow:hidden;background:${bc};font-family:'Apple SD Gothic Neo',sans-serif;border-radius:${b.radius?S(b.radius):0}px;`;
+  const wrap=`position:relative;width:${S(b.w)}px;height:${S(b.h)}px;overflow:hidden;background:${bc};font-family:${FONT};border-radius:${b.radius?S(b.radius):0}px;`;
 
   const imgW=(src,bx,by,iw,ih)=>{
     const sw=Math.round(iw*sc),sh=Math.round(ih*sc);
@@ -424,7 +410,7 @@ function renderPreview(){
   }else if(id==="mo_main"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     const bh=26;
-    const badge=state.badgeLabel?`<div style="position:absolute;left:0;top:0;z-index:4;background:rgba(0,0,0,0.85);color:#fff;border-radius:0 0 ${S(16)}px 0;padding:${S(4)}px ${S(13)}px;font-size:${S(12)}px;font-weight:700;white-space:nowrap;">${state.badgeLabel}</div>`:`<div style="position:absolute;left:0;top:0;z-index:4;width:${S(60)}px;height:${S(bh)}px;"></div>`;
+    const badge=state.badgeLabel?`<div style="position:absolute;left:0;top:0;z-index:4;background:rgba(0,0,0,0.85);color:#fff;border-radius:0 0 ${S(16)}px 0;padding:${S(4)}px ${S(13)}px;font-size:${S(12)}px;font-weight:700;white-space:nowrap;">${state.badgeLabel}</div>`:`<div style="position:absolute;left:0;top:0;width:${S(60)}px;height:${S(bh)}px;z-index:4;"></div>`;
     html=imgW(state.bgImg,b.w-120-18,18,120,b.h-36)+badge
       +`<div style="position:absolute;left:${S(16)}px;top:${S(34)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l1?'visible':'hidden'};">${l1||'X'}</div>`
       +`<div style="position:absolute;left:${S(16)}px;top:${S(34+23.4)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l2?'visible':'hidden'};">${l2||'X'}</div>`
@@ -462,6 +448,9 @@ async function exportPNG(){
   const m=state.mult;const{w,h,id,radius}=b;
   const SCALE=Math.min(1,540/b.w);
   const sc=state.bgScale/100;
+
+  await document.fonts.ready;
+
   const canvas=document.createElement("canvas");
   canvas.width=w*m;canvas.height=h*m;
   const ctx=canvas.getContext("2d");
@@ -483,9 +472,9 @@ async function exportPNG(){
     ctx.drawImage(img,dx+(sw-img.width*ratio)/2,dy+(sh-img.height*ratio)/2,img.width*ratio,img.height*ratio);
     ctx.restore();
   };
+
   const dark=["#333132","#222222","#000000","#1a4fa0","#E70012"].includes(state.bgColor);
   const textCol=state.textColor||(dark?"#ffffff":"#333132");
-  const subCol=dark?"rgba(255,255,255,0.7)":"#777777";
   const isPartner=(state.form.sub_or_partner||"").includes("×");
   const f=state.form;
 
@@ -497,43 +486,44 @@ async function exportPNG(){
 
   if(id==="pc_event"){
     await drawImg(state.bgImg,w-130,0,130,h);roundBadgeBox(f.round_badge,25,30,13,state.roundBadgeColor);
-    t(f.sub_or_partner,25,96,isPartner?12:13,false,subCol);
+    t(f.sub_or_partner,25,96,isPartner?12:13,false,textCol);
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     t(l1,25,130,22,true);t(l2,25,160,22,true);
   }else if(id==="mo_event"){
     await drawImg(state.bgImg,w-290,(h-252)/2,290,252);roundBadgeBox(f.round_badge,40,43,18,state.roundBadgeColor);
-    t(f.sub_or_partner,40,138,isPartner?18:20,false,subCol);
+    t(f.sub_or_partner,40,138,isPartner?18:20,false,textCol);
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     t(l1,40,186,32,true);t(l2,40,230,32,true);
   }else if(id==="mo_main"){
     await drawImg(state.bgImg,w-120-18,18,120,h-36);
     if(state.badgeLabel){
-      ctx.save();ctx.font=`700 12px Arial,sans-serif`;
+      ctx.save();ctx.font=`700 12px ${FONT}`;
       const tw=ctx.measureText(state.badgeLabel).width,px=13,py=4,bh=12+py*2,bw=tw+px*2;
       ctx.fillStyle="rgba(0,0,0,0.85)";ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(bw,0);ctx.lineTo(bw,bh-16);
       ctx.quadraticCurveTo(bw,bh,bw-16,bh);ctx.lineTo(0,bh);ctx.closePath();ctx.fill();
       ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(state.badgeLabel,px,bh/2);ctx.restore();
     }
-    const bh2=state.badgeLabel?26:0;
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    t(l1,16,bh2+38,18,true);t(l2,16,bh2+62,18,true);t(f.sub,16,bh2+90,14,false,subCol);
+    t(l1,16,34+18,18,true);t(l2,16,34+18+23.4,18,true);
+    t(f.sub,16,34+18+23.4+23.4+6,14,false,textCol);
   }else if(id==="pc_kv"){
     await drawImg(state.bgImg,w-50-400,82,400,380);badgeBox(f.badge,142,245,13);
-    t(f.sub,142,320,25,false,subCol);
-    ctx.save();ctx.font=`700 45px Arial,sans-serif`;ctx.letterSpacing="-1.35px";
+    t(f.sub,142,320,25,false,textCol);
+    ctx.save();ctx.font=`700 45px ${FONT}`;
     if(f.main1){ctx.fillStyle=textCol;ctx.fillText(f.main1,142,375);}
     if(f.main2){ctx.fillStyle=textCol;ctx.fillText(f.main2,142,435);}
     ctx.restore();
-    t(f.subtext,142,465,16,false,subCol);await btnBox(f.btn,142,520,14);
+    t(f.subtext,142,480,16,false,textCol);await btnBox(f.btn,142,520,14);
   }else if(id==="mo_car"){
-    await drawImg(state.bgImg,w-115,0,115,h);t(f.sub,20,32,13,false,subCol);t(f.main1,20,56,15,true);
+    await drawImg(state.bgImg,w-115,0,115,h);t(f.sub,20,32,13,false,textCol);t(f.main1,20,56,15,true);
     const ai=await loadImgEl(state.arrowImg||CHEVRON);
-    if(ai&&f.main1)ctx.drawImage(ai,20+ctx.measureText(f.main1).width+8,40,20,20);
+    if(ai&&f.main1){ctx.save();ctx.font=`700 15px ${FONT}`;const tw=ctx.measureText(f.main1).width;ctx.drawImage(ai,20+tw+4,40,18,18);ctx.restore();}
   }else if(id==="pc_top"){
-    await drawImg(state.bgImg,w-560,20,200,150);t(f.sub,360,80,16,false,subCol);
-    t(f.main1,360,118,26,true);await ctaBox(f.cta,360,148,13);
+    await drawImg(state.bgImg,1245,50,430,170);
+    t(f.sub,360,80,16,false,textCol);t(f.main1,360,118,26,true);
     ctx.fillStyle="rgba(30,100,200,0.1)";ctx.fillRect(0,h-90,w,90);
   }
+
   if(radius)ctx.restore();
   const a=document.createElement("a");
   a.download=`${b.label}_${w*m}x${h*m}.png`;
