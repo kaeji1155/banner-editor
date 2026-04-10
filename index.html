@@ -66,8 +66,15 @@ body{background:#f2f2f2;font-family:'Apple SD Gothic Neo',sans-serif;padding:20p
           <span id="bgFileStatus" style="font-size:11px;color:#bbb;"></span>
         </div>
         <div class="sub-label">또는 이미지 URL 직접 입력</div>
-        <input type="text" class="field-input" id="bgUrlInput" placeholder="예) https://cdn.example.com/car.png" oninput="setBgUrl(this.value)"/>
+        <input type="text" class="field-input" id="bgUrlInput" placeholder="예) https://cdn.example.com/car.png" oninput="setBgUrl(this.value)" style="margin-top:3px;"/>
         <div id="bgDragHint" style="font-size:11px;color:#aaa;margin-top:6px;display:none;">💡 미리보기에서 이미지를 드래그해서 위치 조정 가능해요</div>
+        <div id="bgScaleSection" style="display:none;margin-top:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span class="sub-label" style="margin:0;">이미지 크기</span>
+            <span id="bgScaleValue" style="font-size:11px;font-weight:600;color:#C8001E;">100%</span>
+          </div>
+          <input type="range" id="bgScaleRange" min="10" max="150" value="100" oninput="setBgScale(this.value)" style="width:100%;accent-color:#C8001E;cursor:pointer;"/>
+        </div>
       </div>
       <div>
         <div class="label">배경색 <span style="color:#bbb;font-weight:400;">(선택 시 텍스트 색상 자동 변경)</span></div>
@@ -167,12 +174,12 @@ const BANNERS=[
   {id:"pc_top",  label:"PC 단기예약 상단",w:1920,h:270},
 ];
 const FIELDS={
-  pc_event:["sub_or_partner","round_badge","main","cta"],
-  mo_event:["sub_or_partner","round_badge","main","cta"],
+  pc_event:["sub_or_partner","round_badge","main"],
+  mo_event:["sub_or_partner","round_badge","main"],
   mo_main: ["main","sub"],
   pc_kv:   ["badge","sub","main1","main2","subtext","btn"],
   mo_car:  ["sub","main1"],
-  pc_top:  ["sub","main1","cta"],
+  pc_top:  ["sub","main1"],
 };
 const FIELD_META={
   sub_or_partner:{l:"서브카피 / 제휴사 표기",p:"예) 여름 특가  또는  롯데렌터카 × 롯데호텔",max:28},
@@ -190,11 +197,14 @@ const BADGE_PRESETS=["단기렌터카","마이카","멤버십","비즈카","차�
 const BG_COLORS=["#f5f5f5","#ffffff","#333132","#222222","#E70012","#1a4fa0","#e8f4fd"];
 const TEXT_COLORS=["#333132","#ffffff","#000000","#555555","#888888","#cccccc"];
 const BTN_OUTLINE_COLORS=["#333132","#ffffff","#000000","#E70012","#1a4fa0","#888888","#cccccc"];
+const CHEVRON_SVG=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0)"><path d="M7.35921 3.84801C6.88026 4.31202 6.88026 5.06433 7.35921 5.52834L14.0392 12L7.35921 18.4717C6.88026 18.9357 6.88026 19.688 7.35921 20.152C7.83815 20.616 8.61468 20.616 9.09362 20.152L16.6408 12.8402C17.1197 12.3762 17.1197 11.6238 16.6408 11.1598L9.09362 3.84801C8.61468 3.384 7.83815 3.384 7.35921 3.84801Z" fill="#666666"/></g><defs><clipPath id="clip0"><rect width="24" height="24" fill="white"/></clipPath></defs></svg>`;
+const CHEVRON=`data:image/svg+xml;base64,${btoa(CHEVRON_SVG)}`;
+const CHEVRON_WHITE=`data:image/svg+xml;base64,${btoa(CHEVRON_SVG.replace('fill="#666666"','fill="#ffffff"'))}`;
 
 let state={
   banner:null,form:{},bgImg:null,bgColor:"#f5f5f5",textColor:"#333132",
   badgeColor:"#000000",roundBadgeColor:"#0050FF",btnOutlineColor:"#333132",
-  arrowImg:null,badgeLabel:null,mult:1,imgPos:{x:0,y:0}
+  arrowImg:null,badgeLabel:null,mult:1,imgPos:{x:0,y:0},bgScale:100
 };
 
 function getAutoTextColor(bg){
@@ -216,13 +226,14 @@ function selectBanner(id){
   state.banner=BANNERS.find(b=>b.id===id);
   state.form={};state.bgImg=null;state.bgColor="#f5f5f5";state.textColor="#333132";
   state.arrowImg=null;state.imgPos={x:0,y:0};state.roundBadgeColor="#0050FF";
-  state.btnOutlineColor="#333132";state.badgeLabel=null;
+  state.btnOutlineColor="#333132";state.badgeLabel=null;state.bgScale=100;
   document.getElementById("bgFile").value="";
   document.getElementById("arrowFile").value="";
   document.getElementById("bgUrlInput").value="";
   document.getElementById("bgFileStatus").textContent="";
   document.getElementById("arrowFileStatus").textContent="";
   document.getElementById("bgDragHint").style.display="none";
+  document.getElementById("bgScaleSection").style.display="none";
   initBannerBtns();
   document.getElementById("editor").style.display="block";
   renderAll();
@@ -331,6 +342,7 @@ function setTextColor(v){state.textColor=v;renderTextSwatches();renderColorPicke
 function setRoundBadgeColor(v){state.roundBadgeColor=v;renderColorPickers();renderPreview();}
 function setBtnOutlineColor(v){state.btnOutlineColor=v;renderBtnOutlineSwatches();renderColorPickers();renderPreview();}
 function setMult(m){state.mult=m;renderMultBtns();updateHints();}
+function setBgScale(v){state.bgScale=parseInt(v);document.getElementById("bgScaleValue").textContent=v+"%";renderPreview();}
 function setForm(k,v,isTextarea,upper){
   if(isTextarea&&v.split("\n").length>2)return;
   state.form[k]=upper?v.toUpperCase():v;
@@ -342,20 +354,21 @@ function setBgUrl(v){
   if(!v.trim()){state.bgImg=null;renderPreview();return;}
   state.bgImg=v.trim();state.imgPos={x:0,y:0};
   document.getElementById("bgDragHint").style.display="block";
+  document.getElementById("bgScaleSection").style.display="block";
   renderPreview();
 }
-function setArrowUrl(v){
-  state.arrowImg=v.trim()||null;
-  renderPreview();
-}
+function setArrowUrl(v){state.arrowImg=v.trim()||null;renderPreview();}
 function loadBgImg(e){
   const f=e.target.files[0];if(!f)return;
-  state.imgPos={x:0,y:0};
+  state.imgPos={x:0,y:0};state.bgScale=100;
   const r=new FileReader();
   r.onload=ev=>{
     state.bgImg=ev.target.result;
     document.getElementById("bgFileStatus").innerHTML=`<span style="color:#C8001E;font-weight:600;">✅ 업로드됨</span>`;
     document.getElementById("bgDragHint").style.display="block";
+    document.getElementById("bgScaleSection").style.display="block";
+    document.getElementById("bgScaleRange").value=100;
+    document.getElementById("bgScaleValue").textContent="100%";
     renderPreview();
   };
   r.readAsDataURL(f);
@@ -382,44 +395,49 @@ function renderPreview(){
   const f=state.form;
   const isPartner=(f.sub_or_partner||"").includes("×");
   const oc=state.btnOutlineColor;
+  const sc=state.bgScale/100;
   const wrap=`position:relative;width:${S(b.w)}px;height:${S(b.h)}px;overflow:hidden;background:${bc};font-family:'Apple SD Gothic Neo',sans-serif;border-radius:${b.radius?S(b.radius):0}px;`;
 
   const imgW=(src,bx,by,iw,ih)=>{
+    const sw=Math.round(iw*sc),sh=Math.round(ih*sc);
     const dx=S(bx)+state.imgPos.x,dy=S(by)+state.imgPos.y;
-    if(src)return`<img src="${src}" style="position:absolute;left:${dx}px;top:${dy}px;width:${S(iw)}px;height:${S(ih)}px;object-fit:contain;padding:${S(10)}px ${S(20)}px ${S(10)}px 0;box-sizing:border-box;cursor:grab;z-index:2;" id="drag-img" draggable="false"/>`;
+    if(src)return`<img src="${src}" style="position:absolute;left:${dx}px;top:${dy}px;width:${S(sw)}px;height:${S(sh)}px;object-fit:contain;cursor:grab;z-index:2;" id="drag-img" draggable="false"/>`;
     return`<div style="position:absolute;left:${S(bx)}px;top:${S(by)}px;width:${S(iw)}px;height:${S(ih)}px;background:rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;font-size:${S(11)}px;color:#bbb;z-index:2;"><span style="font-size:${S(16)}px;">🖼️</span><span>이미지 영역</span></div>`;
   };
   const T=(txt,x,y,sz,bold,col,maxW)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;font-size:${S(sz)}px;font-weight:${bold?700:400};color:${col||textCol};max-width:${S(maxW||600)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${txt?'visible':'hidden'};">${txt||'X'}</div>`;
   const Badge=(txt,x,y,fs=11)=>!txt?"":`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:${state.badgeColor};color:#fff;border-radius:${S(6)}px;padding:${S(3)}px ${S(8)}px;font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;">${txt}</div>`;
   const RoundBadge=(txt,x,y,fs,col)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;display:inline-flex;align-items:center;justify-content:center;padding:${S(6)}px ${S(14)}px;border-radius:${S(50)}px;border:${S(2)}px solid ${col};background:#fff;color:${col};font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;visibility:${txt?'visible':'hidden'};">${txt||'X'}</div>`;
-  const Btn=(txt,x,y,fs=12)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:transparent;border-radius:${S(999)}px;border:${S(1)}px solid ${oc};padding:${S(10)}px ${S(32)}px;font-size:${S(fs)}px;color:${oc};white-space:nowrap;z-index:3;display:inline-flex;align-items:center;visibility:${txt?'visible':'hidden'};">${txt||'버튼'}</div>`;
-  const Cta=(txt,x,y,fs=12)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:#C8001E;color:#fff;border-radius:${S(4)}px;padding:${S(8)}px ${S(16)}px;font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;display:flex;align-items:center;gap:${S(4)}px;visibility:${txt?'visible':'hidden'};">${txt||'CTA'}<span style="font-size:${S(fs+2)}px;">›</span></div>`;
+  const Btn=(txt,x,y,fs=12)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:transparent;border-radius:${S(999)}px;border:${S(1)}px solid ${oc};padding:${S(10)}px ${S(32)}px;font-size:${S(fs)}px;color:${oc};white-space:nowrap;z-index:3;display:inline-flex;align-items:center;gap:${S(4)}px;visibility:${txt?'visible':'hidden'};">${txt||'버튼'}<img src="${CHEVRON}" style="width:${S(fs+2)}px;height:${S(fs+2)}px;object-fit:contain;opacity:0.6;"/></div>`;
+  const Cta=(txt,x,y,fs=12)=>`<div style="position:absolute;left:${S(x)}px;top:${S(y)}px;background:#C8001E;color:#fff;border-radius:${S(4)}px;padding:${S(8)}px ${S(16)}px;font-size:${S(fs)}px;font-weight:700;white-space:nowrap;z-index:3;display:flex;align-items:center;gap:${S(4)}px;visibility:${txt?'visible':'hidden'};">${txt||'CTA'}<img src="${CHEVRON_WHITE}" style="width:${S(fs+2)}px;height:${S(fs+2)}px;object-fit:contain;"/></div>`;
 
   let html="";const id=b.id;
   if(id==="pc_event"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    html=imgW(state.bgImg,b.w-130,0,130,b.h)+RoundBadge(f.round_badge,25,30,13,state.roundBadgeColor)+T(f.sub_or_partner,25,80,isPartner?12:13,false,subCol,285)+T(l1,25,108,22,true,null,285)+T(l2,25,138,22,true,null,285)+Cta(f.cta,25,b.h-52,11);
+    html=imgW(state.bgImg,b.w-130,0,130,b.h)+RoundBadge(f.round_badge,25,30,13,state.roundBadgeColor)+T(f.sub_or_partner,25,80,isPartner?12:13,false,subCol,285)+T(l1,25,108,22,true,null,285)+T(l2,25,138,22,true,null,285);
   }else if(id==="mo_event"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    html=imgW(state.bgImg,b.w-290,(b.h-252)/2,290,252)+RoundBadge(f.round_badge,40,43,18,state.roundBadgeColor)+T(f.sub_or_partner,40,116,isPartner?18:20,false,subCol,460)+T(l1,40,162,32,true,null,460)+T(l2,40,206,32,true,null,460)+Cta(f.cta,40,b.h-68,13);
+    html=imgW(state.bgImg,b.w-290,(b.h-252)/2,290,252)+RoundBadge(f.round_badge,40,43,18,state.roundBadgeColor)+T(f.sub_or_partner,40,116,isPartner?18:20,false,subCol,460)+T(l1,40,162,32,true,null,460)+T(l2,40,206,32,true,null,460);
   }else if(id==="mo_main"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     const bh=state.badgeLabel?26:0;
     const badge=state.badgeLabel?`<div style="position:absolute;left:0;top:0;z-index:4;background:rgba(0,0,0,0.85);color:#fff;border-radius:0 0 ${S(16)}px 0;padding:${S(4)}px ${S(13)}px;font-size:${S(12)}px;font-weight:700;white-space:nowrap;">${state.badgeLabel}</div>`:"";
-    html=imgW(state.bgImg,b.w-120-18,18,120,b.h-36)+badge+T(l1,16,bh+20,18,true,null,174)+T(l2,16,bh+44,18,true,null,174)+T(f.sub,16,bh+72,14,false,subCol,174);
+    html=imgW(state.bgImg,b.w-120-18,18,120,b.h-36)+badge
+      +`<div style="position:absolute;left:${S(16)}px;top:${S(bh+20)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l1?'visible':'hidden'};">${l1||'X'}</div>`
+      +`<div style="position:absolute;left:${S(16)}px;top:${S(bh+20+23.4)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l2?'visible':'hidden'};">${l2||'X'}</div>`
+      +T(f.sub,16,bh+72,14,false,subCol,174);
   }else if(id==="pc_kv"){
     html=imgW(state.bgImg,b.w-50-400,82,400,380)
       +Badge(f.badge,142,245,13)
-      +T(f.sub_or_partner||f.sub,142,295,18,false,subCol,500)
-      +`<div style="position:absolute;left:${S(142)}px;top:${S(330)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;letter-spacing:-1.35px;max-width:${S(560)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};">${f.main1||'X'}</div>`
-      +`<div style="position:absolute;left:${S(142)}px;top:${S(390)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;letter-spacing:-1.35px;max-width:${S(560)}px;z-index:3;visibility:${f.main2?'visible':'hidden'};">${f.main2||'X'}</div>`
+      +T(f.sub,142,295,25,false,subCol,500)
+      +`<div style="position:absolute;left:${S(142)}px;top:${S(330)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;max-width:${S(560)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};">${f.main1||'X'}</div>`
+      +`<div style="position:absolute;left:${S(142)}px;top:${S(390)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;max-width:${S(560)}px;z-index:3;visibility:${f.main2?'visible':'hidden'};">${f.main2||'X'}</div>`
       +T(f.subtext,142,465,16,false,subCol,500)
       +Btn(f.btn,142,520,14);
   }else if(id==="mo_car"){
-    const arrow=state.arrowImg?`<img src="${state.arrowImg}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;" draggable="false"/>`:`<span style="font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:1;">›</span>`;
+    const arrow=state.arrowImg?`<img src="${state.arrowImg}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;" draggable="false"/>`:`<img src="${CHEVRON}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;"/>`;
     html=imgW(state.bgImg,b.w-115,0,115,b.h)+T(f.sub,20,18,13,false,subCol,200)+`<div style="position:absolute;left:${S(20)}px;top:${S(38)}px;display:flex;align-items:center;gap:${S(4)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};"><span style="font-size:${S(15)}px;font-weight:700;color:${textCol};">${f.main1||'메인'}</span>${arrow}</div>`;
   }else if(id==="pc_top"){
-    html=imgW(state.bgImg,b.w-560,20,200,150)+T(f.sub,360,60,16,false,subCol,600)+T(f.main1,360,92,26,true,null,600)+Cta(f.cta,360,148,13)+`<div style="position:absolute;bottom:0;left:0;right:0;height:${S(90)}px;background:rgba(30,100,200,0.1);display:flex;align-items:center;justify-content:center;font-size:${S(11)}px;color:#aaa;">예약 영역</div>`;
+    html=imgW(state.bgImg,1245,50,430,170)+T(f.sub,360,60,16,false,subCol,600)+T(f.main1,360,92,26,true,null,600)+`<div style="position:absolute;bottom:0;left:0;right:0;height:${S(90)}px;background:rgba(30,100,200,0.1);display:flex;align-items:center;justify-content:center;font-size:${S(11)}px;color:#aaa;">예약 영역</div>`;
   }
 
   document.getElementById("preview-container").innerHTML=`<div style="${wrap}" id="preview-box">${html}</div>`;
@@ -439,6 +457,7 @@ async function exportPNG(){
   const b=state.banner;if(!b)return;
   const m=state.mult;const{w,h,id,radius}=b;
   const SCALE=Math.min(1,540/b.w);
+  const sc=state.bgScale/100;
   const canvas=document.createElement("canvas");
   canvas.width=w*m;canvas.height=h*m;
   const ctx=canvas.getContext("2d");
@@ -448,16 +467,16 @@ async function exportPNG(){
 
   const loadImgEl=src=>new Promise(res=>{
     if(!src){res(null);return;}
-    const img=new Image();
-    img.crossOrigin="anonymous";
+    const img=new Image();img.crossOrigin="anonymous";
     img.onload=()=>res(img);img.onerror=()=>res(null);img.src=src;
   });
   const drawImg=async(src,bx,by,iw,ih)=>{
     const img=await loadImgEl(src);if(!img)return;
+    const sw=iw*sc,sh=ih*sc;
     const dx=bx+state.imgPos.x/SCALE,dy=by+state.imgPos.y/SCALE;
-    ctx.save();ctx.beginPath();ctx.rect(dx,dy,iw,ih);ctx.clip();
-    const ratio=Math.min(iw/img.width,ih/img.height);
-    ctx.drawImage(img,dx+(iw-img.width*ratio)/2,dy+(ih-img.height*ratio)/2,img.width*ratio,img.height*ratio);
+    ctx.save();ctx.beginPath();ctx.rect(dx,dy,sw,sh);ctx.clip();
+    const ratio=Math.min(sw/img.width,sh/img.height);
+    ctx.drawImage(img,dx+(sw-img.width*ratio)/2,dy+(sh-img.height*ratio)/2,img.width*ratio,img.height*ratio);
     ctx.restore();
   };
   const dark=["#333132","#222222","#000000","#1a4fa0","#E70012"].includes(state.bgColor);
@@ -469,19 +488,19 @@ async function exportPNG(){
   const t=(txt,x,y,sz,bold,color,mW=9999)=>{if(!txt)return;ctx.save();ctx.font=`${bold?"700":"400"} ${sz}px Arial,sans-serif`;ctx.fillStyle=color||textCol;ctx.fillText(txt,x,y,mW);ctx.restore();};
   const badgeBox=(txt,x,y,fs=11)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=8,py=3;ctx.fillStyle=state.badgeColor;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2+2,6);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
   const roundBadgeBox=(txt,x,y,fs,color)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=14,py=6;ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2,50);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=color;ctx.fillText(txt,x+px,y+fs+py-1);ctx.restore();};
-  const ctaBox=(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const lb=txt+" ›",tw=ctx.measureText(lb).width,px=16,py=8;ctx.fillStyle="#C8001E";ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2+2,4);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(lb,x+px,y+fs+py);ctx.restore();};
-  const btnBox=(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`500 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=32,py=10,bh=fs+py*2+2;ctx.strokeStyle=state.btnOutlineColor;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,bh,bh/2);ctx.stroke();ctx.fillStyle=state.btnOutlineColor;ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
+  const ctaBox=async(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const lb=txt,tw=ctx.measureText(lb).width,px=16,py=8,bh=fs+py*2+2;ctx.fillStyle="#C8001E";ctx.beginPath();ctx.roundRect(x,y,tw+px*2+fs+8,bh,4);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(lb,x+px,y+fs+py);const ci=await loadImgEl(CHEVRON_WHITE);if(ci)ctx.drawImage(ci,x+px+tw+4,y+(bh-fs)/2,fs,fs);ctx.restore();};
+  const btnBox=async(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`500 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=32,py=10,bh=fs+py*2+2;ctx.strokeStyle=state.btnOutlineColor;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,tw+px*2+fs+8,bh,bh/2);ctx.stroke();ctx.fillStyle=state.btnOutlineColor;ctx.fillText(txt,x+px,y+fs+py);const ci=await loadImgEl(CHEVRON);if(ci)ctx.drawImage(ci,x+px+tw+4,y+(bh-fs)/2,fs,fs);ctx.restore();};
 
   if(id==="pc_event"){
     await drawImg(state.bgImg,w-130,0,130,h);roundBadgeBox(f.round_badge,25,30,13,state.roundBadgeColor);
     t(f.sub_or_partner,25,96,isPartner?12:13,false,subCol);
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    t(l1,25,130,22,true);t(l2,25,160,22,true);ctaBox(f.cta,25,h-52,11);
+    t(l1,25,130,22,true);t(l2,25,160,22,true);
   }else if(id==="mo_event"){
     await drawImg(state.bgImg,w-290,(h-252)/2,290,252);roundBadgeBox(f.round_badge,40,43,18,state.roundBadgeColor);
     t(f.sub_or_partner,40,138,isPartner?18:20,false,subCol);
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    t(l1,40,186,32,true);t(l2,40,230,32,true);ctaBox(f.cta,40,h-68,13);
+    t(l1,40,186,32,true);t(l2,40,230,32,true);
   }else if(id==="mo_main"){
     await drawImg(state.bgImg,w-120-18,18,120,h-36);
     if(state.badgeLabel){
@@ -495,17 +514,20 @@ async function exportPNG(){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     t(l1,16,bh2+38,18,true);t(l2,16,bh2+62,18,true);t(f.sub,16,bh2+90,14,false,subCol);
   }else if(id==="pc_kv"){
-    await drawImg(state.bgImg,w-50-400,82,400,380);badgeBox(f.badge,142,114,13);
-    t(f.sub,142,172,20,false,subCol);t(f.main1,142,228,36,true);t(f.main2,142,276,36,true);
-    t(f.subtext,142,314,14,false,subCol);btnBox(f.btn,142,360,14);
+    await drawImg(state.bgImg,w-50-400,82,400,380);badgeBox(f.badge,142,245,13);
+    t(f.sub,142,320,25,false,subCol);
+    ctx.save();ctx.font=`700 45px Arial,sans-serif`;ctx.letterSpacing="-1.35px";
+    if(f.main1){ctx.fillStyle=textCol;ctx.fillText(f.main1,142,375);}
+    if(f.main2){ctx.fillStyle=textCol;ctx.fillText(f.main2,142,435);}
+    ctx.restore();
+    t(f.subtext,142,465,16,false,subCol);await btnBox(f.btn,142,520,14);
   }else if(id==="mo_car"){
     await drawImg(state.bgImg,w-115,0,115,h);t(f.sub,20,32,13,false,subCol);t(f.main1,20,56,15,true);
-    const ai=await loadImgEl(state.arrowImg);
-    if(ai)ctx.drawImage(ai,20+(f.main1?ctx.measureText(f.main1).width+8:0),40,20,20);
-    else if(f.main1){ctx.save();ctx.font="700 22px Arial";ctx.fillStyle=textCol;ctx.fillText("›",20+ctx.measureText(f.main1).width+8,58);ctx.restore();}
+    const ai=await loadImgEl(state.arrowImg||CHEVRON);
+    if(ai&&f.main1)ctx.drawImage(ai,20+ctx.measureText(f.main1).width+8,40,20,20);
   }else if(id==="pc_top"){
     await drawImg(state.bgImg,w-560,20,200,150);t(f.sub,360,80,16,false,subCol);
-    t(f.main1,360,118,26,true);ctaBox(f.cta,360,148,13);
+    t(f.main1,360,118,26,true);await ctaBox(f.cta,360,148,13);
     ctx.fillStyle="rgba(30,100,200,0.1)";ctx.fillRect(0,h-90,w,90);
   }
   if(radius)ctx.restore();
