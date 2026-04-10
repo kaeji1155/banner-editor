@@ -414,31 +414,31 @@ function renderPreview(){
   let html="";const id=b.id;
   if(id==="pc_event"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    html=imgW(state.bgImg,b.w-130,0,130,b.h)+RoundBadge(f.round_badge,25,30,13,state.roundBadgeColor)+T(f.sub_or_partner,25,80,isPartner?12:13,false,subCol,285)+T(l1,25,108,22,true,null,285)+T(l2,25,138,22,true,null,285);
+    html=imgW(state.bgImg,b.w-130,0,130,b.h)+RoundBadge(f.round_badge,25,30,13,state.roundBadgeColor)+T(f.sub_or_partner,25,80,isPartner?12:13,false,textCol,285)+T(l1,25,108,22,true,null,285)+T(l2,25,138,22,true,null,285);
   }else if(id==="mo_event"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
-    html=imgW(state.bgImg,b.w-290,(b.h-252)/2,290,252)+RoundBadge(f.round_badge,40,43,18,state.roundBadgeColor)+T(f.sub_or_partner,40,116,isPartner?18:20,false,subCol,460)+T(l1,40,162,32,true,null,460)+T(l2,40,206,32,true,null,460);
+    html=imgW(state.bgImg,b.w-290,(b.h-252)/2,290,252)+RoundBadge(f.round_badge,40,43,18,state.roundBadgeColor)+T(f.sub_or_partner,40,116,isPartner?18:20,false,textCol,460)+T(l1,40,162,32,true,null,460)+T(l2,40,206,32,true,null,460);
   }else if(id==="mo_main"){
     const l1=(f.main||"").split("\n")[0]||"",l2=(f.main||"").split("\n")[1]||"";
     const bh=26;
     const badge=state.badgeLabel?`<div style="position:absolute;left:0;top:0;z-index:4;background:rgba(0,0,0,0.85);color:#fff;border-radius:0 0 ${S(16)}px 0;padding:${S(4)}px ${S(13)}px;font-size:${S(12)}px;font-weight:700;white-space:nowrap;">${state.badgeLabel}</div>`:`<div style="position:absolute;left:0;top:0;z-index:4;width:${S(60)}px;height:${S(bh)}px;"></div>`;
     html=imgW(state.bgImg,b.w-120-18,18,120,b.h-36)+badge
-      +`<div style="position:absolute;left:${S(16)}px;top:${S(bh+20)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l1?'visible':'hidden'};">${l1||'X'}</div>`
-      +`<div style="position:absolute;left:${S(16)}px;top:${S(bh+20+23.4)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l2?'visible':'hidden'};">${l2||'X'}</div>`
-      +T(f.sub,16,bh+72,14,false,subCol,174);
+      +`<div style="position:absolute;left:${S(16)}px;top:${S(34)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l1?'visible':'hidden'};">${l1||'X'}</div>`
+      +`<div style="position:absolute;left:${S(16)}px;top:${S(34+23.4)}px;font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:${S(23.4)}px;max-width:${S(174)}px;white-space:nowrap;overflow:hidden;z-index:3;visibility:${l2?'visible':'hidden'};">${l2||'X'}</div>`
+      +T(f.sub,16,34+23.4+23.4+6,14,false,textCol,174);
   }else if(id==="pc_kv"){
     html=imgW(state.bgImg,b.w-50-400,82,400,380)
       +Badge(f.badge,142,245,13)
-      +T(f.sub,142,295,25,false,subCol,500)
+      +T(f.sub,142,295,25,false,textCol,500)
       +`<div style="position:absolute;left:${S(142)}px;top:${S(330)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;max-width:${S(560)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};">${f.main1||'X'}</div>`
       +`<div style="position:absolute;left:${S(142)}px;top:${S(390)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;max-width:${S(560)}px;z-index:3;visibility:${f.main2?'visible':'hidden'};">${f.main2||'X'}</div>`
-      +T(f.subtext,142,465,16,false,subCol,500)
+      +T(f.subtext,142,465,16,false,textCol,500)
       +Btn(f.btn,142,520,14);
   }else if(id==="mo_car"){
     const arrow=state.arrowImg?`<img src="${state.arrowImg}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;" draggable="false"/>`:`<img src="${CHEVRON}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;"/>`;
-    html=imgW(state.bgImg,b.w-115,0,115,b.h)+T(f.sub,20,18,13,false,subCol,200)+`<div style="position:absolute;left:${S(20)}px;top:${S(38)}px;display:flex;align-items:center;gap:${S(4)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};"><span style="font-size:${S(15)}px;font-weight:700;color:${textCol};">${f.main1||'메인'}</span>${arrow}</div>`;
+    html=imgW(state.bgImg,b.w-115,0,115,b.h)+T(f.sub,20,18,13,false,textCol,200)+`<div style="position:absolute;left:${S(20)}px;top:${S(38)}px;display:flex;align-items:center;gap:${S(4)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};"><span style="font-size:${S(15)}px;font-weight:700;color:${textCol};">${f.main1||'메인'}</span>${arrow}</div>`;
   }else if(id==="pc_top"){
-    html=imgW(state.bgImg,1245,50,430,170)+T(f.sub,360,60,16,false,subCol,600)+T(f.main1,360,92,26,true,null,600)+`<div style="position:absolute;bottom:0;left:0;right:0;height:${S(90)}px;background:rgba(30,100,200,0.1);display:flex;align-items:center;justify-content:center;font-size:${S(11)}px;color:#aaa;">예약 영역</div>`;
+    html=imgW(state.bgImg,1245,50,430,170)+T(f.sub,360,60,16,false,textCol,600)+T(f.main1,360,92,26,true,null,600)+`<div style="position:absolute;bottom:0;left:0;right:0;height:${S(90)}px;background:rgba(30,100,200,0.1);display:flex;align-items:center;justify-content:center;font-size:${S(11)}px;color:#aaa;">예약 영역</div>`;
   }
 
   document.getElementById("preview-container").innerHTML=`<div style="${wrap}" id="preview-box">${html}</div>`;
