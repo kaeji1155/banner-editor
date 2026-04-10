@@ -408,7 +408,13 @@ function renderPreview(){
     const badge=state.badgeLabel?`<div style="position:absolute;left:0;top:0;z-index:4;background:rgba(0,0,0,0.85);color:#fff;border-radius:0 0 ${S(16)}px 0;padding:${S(4)}px ${S(13)}px;font-size:${S(12)}px;font-weight:700;white-space:nowrap;">${state.badgeLabel}</div>`:"";
     html=imgW(state.bgImg,b.w-120-18,18,120,b.h-36)+badge+T(l1,16,bh+20,18,true,null,174)+T(l2,16,bh+44,18,true,null,174)+T(f.sub,16,bh+72,14,false,subCol,174);
   }else if(id==="pc_kv"){
-    html=imgW(state.bgImg,b.w-50-400,82,400,380)+Badge(f.badge,142,114,13)+T(f.sub,142,152,20,false,subCol,380)+T(f.main1,142,192,36,true,null,380)+T(f.main2,142,240,36,true,null,380)+T(f.subtext,142,300,14,false,subCol,380)+Btn(f.btn,142,360,14);
+    html=imgW(state.bgImg,b.w-50-400,82,400,380)
+      +Badge(f.badge,142,245,13)
+      +T(f.sub_or_partner||f.sub,142,295,18,false,subCol,500)
+      +`<div style="position:absolute;left:${S(142)}px;top:${S(330)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;letter-spacing:-1.35px;max-width:${S(560)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};">${f.main1||'X'}</div>`
+      +`<div style="position:absolute;left:${S(142)}px;top:${S(390)}px;font-size:${S(45)}px;font-weight:700;color:${textCol};line-height:${S(60)}px;letter-spacing:-1.35px;max-width:${S(560)}px;z-index:3;visibility:${f.main2?'visible':'hidden'};">${f.main2||'X'}</div>`
+      +T(f.subtext,142,465,16,false,subCol,500)
+      +Btn(f.btn,142,520,14);
   }else if(id==="mo_car"){
     const arrow=state.arrowImg?`<img src="${state.arrowImg}" style="width:${S(18)}px;height:${S(18)}px;object-fit:contain;" draggable="false"/>`:`<span style="font-size:${S(18)}px;font-weight:700;color:${textCol};line-height:1;">›</span>`;
     html=imgW(state.bgImg,b.w-115,0,115,b.h)+T(f.sub,20,18,13,false,subCol,200)+`<div style="position:absolute;left:${S(20)}px;top:${S(38)}px;display:flex;align-items:center;gap:${S(4)}px;z-index:3;visibility:${f.main1?'visible':'hidden'};"><span style="font-size:${S(15)}px;font-weight:700;color:${textCol};">${f.main1||'메인'}</span>${arrow}</div>`;
