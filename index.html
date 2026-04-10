@@ -389,7 +389,10 @@ function renderPreview(){
   const b=state.banner;if(!b)return;
   const scale=Math.min(1,540/b.w);
   const S=v=>Math.round(v*scale);
-  const dark=["#333132","#222222","#000000","#1a4fa0","#E70012"].includes(state.bgColor);
+  // Pretendard 폰트 로드 후 추출
+  await document.fonts.load(`700 45px Pretendard`);
+  await document.fonts.load(`400 20px Pretendard`);
+  const FONT = `Pretendard,'Apple SD Gothic Neo',Arial,sans-serif`;
   const textCol=state.textColor||(dark?"#fff":"#333132");
   const subCol=dark?"rgba(255,255,255,0.7)":"#777";
   const bc=state.bgColor||"#f5f5f5";
@@ -486,11 +489,11 @@ async function exportPNG(){
   const isPartner=(state.form.sub_or_partner||"").includes("×");
   const f=state.form;
 
-  const t=(txt,x,y,sz,bold,color,mW=9999)=>{if(!txt)return;ctx.save();ctx.font=`${bold?"700":"400"} ${sz}px Arial,sans-serif`;ctx.fillStyle=color||textCol;ctx.fillText(txt,x,y,mW);ctx.restore();};
-  const badgeBox=(txt,x,y,fs=11)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=8,py=3;ctx.fillStyle=state.badgeColor;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2+2,6);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
-  const roundBadgeBox=(txt,x,y,fs,color)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=14,py=6;ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2,50);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=color;ctx.fillText(txt,x+px,y+fs+py-1);ctx.restore();};
-  const ctaBox=async(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px Arial,sans-serif`;const lb=txt,tw=ctx.measureText(lb).width,px=16,py=8,bh=fs+py*2+2;ctx.fillStyle="#C8001E";ctx.beginPath();ctx.roundRect(x,y,tw+px*2+fs+8,bh,4);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(lb,x+px,y+fs+py);const ci=await loadImgEl(CHEVRON_WHITE);if(ci)ctx.drawImage(ci,x+px+tw+4,y+(bh-fs)/2,fs,fs);ctx.restore();};
-  const btnBox=async(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`500 ${fs}px Arial,sans-serif`;const tw=ctx.measureText(txt).width,px=32,py=10,bh=fs+py*2+2;ctx.strokeStyle=state.btnOutlineColor;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,tw+px*2+fs+8,bh,bh/2);ctx.stroke();ctx.fillStyle=state.btnOutlineColor;ctx.fillText(txt,x+px,y+fs+py);const ci=await loadImgEl(CHEVRON);if(ci)ctx.drawImage(ci,x+px+tw+4,y+(bh-fs)/2,fs,fs);ctx.restore();};
+  const t=(txt,x,y,sz,bold,color,mW=9999)=>{if(!txt)return;ctx.save();ctx.font=`${bold?"700":"400"} ${sz}px ${FONT}`;ctx.fillStyle=color||textCol;ctx.fillText(txt,x,y,mW);ctx.restore();};
+  const badgeBox=(txt,x,y,fs=11)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px ${FONT}`;const tw=ctx.measureText(txt).width,px=8,py=3;ctx.fillStyle=state.badgeColor;ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2+2,6);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(txt,x+px,y+fs+py);ctx.restore();};
+  const roundBadgeBox=(txt,x,y,fs,color)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px ${FONT}`;const tw=ctx.measureText(txt).width,px=14,py=6;ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(x,y,tw+px*2,fs+py*2,50);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=color;ctx.fillText(txt,x+px,y+fs+py-1);ctx.restore();};
+  const ctaBox=async(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`700 ${fs}px ${FONT}`;const lb=txt,tw=ctx.measureText(lb).width,px=16,py=8,bh=fs+py*2+2;ctx.fillStyle="#C8001E";ctx.beginPath();ctx.roundRect(x,y,tw+px*2+fs+8,bh,4);ctx.fill();ctx.fillStyle="#fff";ctx.fillText(lb,x+px,y+fs+py);const ci=await loadImgEl(CHEVRON_WHITE);if(ci)ctx.drawImage(ci,x+px+tw+4,y+(bh-fs)/2,fs,fs);ctx.restore();};
+  const btnBox=async(txt,x,y,fs=12)=>{if(!txt)return;ctx.save();ctx.font=`500 ${fs}px ${FONT}`;const tw=ctx.measureText(txt).width,px=32,py=10,bh=fs+py*2+2;ctx.strokeStyle=state.btnOutlineColor;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x,y,tw+px*2+fs+8,bh,bh/2);ctx.stroke();ctx.fillStyle=state.btnOutlineColor;ctx.fillText(txt,x+px,y+fs+py);const ci=await loadImgEl(CHEVRON);if(ci)ctx.drawImage(ci,x+px+tw+4,y+(bh-fs)/2,fs,fs);ctx.restore();};
 
   if(id==="pc_event"){
     await drawImg(state.bgImg,w-130,0,130,h);roundBadgeBox(f.round_badge,25,30,13,state.roundBadgeColor);
